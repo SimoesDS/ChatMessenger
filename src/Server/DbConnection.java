@@ -1,16 +1,17 @@
 package Server;
 
 import java.sql.Statement;
+
+import Application.Usuario;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class DbConnection {
   private static final String DRIVER = "com.mysql.jdbc.Driver";
-  //private static final String URL = "jdbc:mysql://localhost:3306/aps4db";
-  //private static final String USER = "root";
-  //private static final String PASSWORD = "root";
   private static final String URL = "jdbc:mysql://db4free.net:3306/ccp68aps72";
   private static final String USER = "ccp68aps7cdrv2";
   private static final String PASSWORD = "HhC$K#@:G%&f.kF";
@@ -19,8 +20,8 @@ public class DbConnection {
   private static Object result[][];
    
   public static void insertData(String table, String values) {
-    openConnection();
     try {
+    	openConnection();
       Statement st = conn.createStatement();
       st.executeUpdate("INSERT INTO " + table + " VALUES (" + values + ")");
     }
@@ -48,13 +49,15 @@ public class DbConnection {
       openConnection();
       Statement st = conn.createStatement();
       ResultSet rs = st.executeQuery("SELECT " + target + " FROM " + table + " WHERE " + where);
-      rs.last(); int rsRowCount = rs.getRow(); rs.beforeFirst();
+      rs.last(); 
+      int rsRowCount = rs.getRow(); 
+      rs.beforeFirst();
       Object result[][] = new Object[rsRowCount][rs.getMetaData().getColumnCount()];  
 
-      if (rsRowCount == 0) {
-        closeConnection();
+      closeConnection();
+      if (rsRowCount == 0)
         return result;
-      }
+      
       int resultRow = 0;
       while (rs.next()) {
         switch (table) {
@@ -83,20 +86,16 @@ public class DbConnection {
         }
         resultRow++;
       }
-      closeConnection();
       return result;
     }
-    catch(SQLException e) {System.out.println("SQLException in getData()");}
+    catch(SQLException e) { 
+    	System.out.println("SQLException in getData()"); // TODO: Deve registrar no logger  
+    }
     return result;
   }
     
-  public static void openConnection() {
-    try {
-      //Class.forName(DRIVER);
-      conn = DriverManager.getConnection(URL,USER,PASSWORD);  
-    }
-   // catch(ClassNotFoundException e) {System.out.println("Class does not exists");}
-    catch(SQLException e) {e.printStackTrace();}
+  public static void openConnection() throws SQLException {
+  	conn = DriverManager.getConnection(URL, USER, PASSWORD);  
   }
   
   private static void closeConnection() {
@@ -105,4 +104,39 @@ public class DbConnection {
     } 
     catch(SQLException e) {System.out.println("Invalid query");}
   }
+ 
+  
+  
+  public Usuario getUserByID(int userID) {
+  		return new Usuario();		
+	}
+  
+  public static Usuario userLogin(String userName, String password) {
+  	final String sql = "SELECT * FROM users WHERE user_name = ? and user_password = ?";
+  	try {
+			openConnection();
+
+		  PreparedStatement st = conn.prepareStatement(sql);
+		  st.setString(1, userName);
+		  st.setString(2, password);
+		  ResultSet rs = st.executeQuery();
+		  
+		  if(!rs.next())
+		  	return null;
+		  
+		  return new Usuario(rs.getInt("user_id"), 
+		  		rs.getString("user_name"), 
+		  		rs.getString("user_login"),
+		  		rs.getString("user_password"),
+		  		true);
+		  
+  	} catch (SQLException e) {
+			// TODO Registrar no logger
+			e.printStackTrace();
+		} finally {
+			closeConnection();
+		}
+    return null;
+}
+  
 }

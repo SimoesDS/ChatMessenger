@@ -18,6 +18,7 @@ public class ClientHandler implements Runnable, ICommands {
 	private Usuario usuario;
 	private RequestResponseData requestResponseData;
 	private AlertaDadosListener alertaDadosListener;
+	
 	public ClientHandler(Socket conexaoCliente) throws IOException {
 		comunicacao = new SocketComunicacao(conexaoCliente);
 	}
@@ -38,8 +39,10 @@ public class ClientHandler implements Runnable, ICommands {
 				if (obj != null && obj instanceof RequestResponseData) {
 					requestResponseData = (RequestResponseData) obj;
 					System.out.println(new Date().getTime() + " ClientHandler: chegou alguma coisa " + requestResponseData.getObject());
+					
 					if(requestResponseData.getCommand() == MESSAGE)
 						System.out.println("Chegou mensagem De: " + requestResponseData.getIdOwner() + " Para: " + requestResponseData.getIdDestino());
+					
 					alertaDadosListener.AlertaDados((ClientHandler) this, requestResponseData);
 
 					if (requestResponseData.getCommand() == AUTHENTICATED) {

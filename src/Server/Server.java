@@ -21,9 +21,11 @@ public class Server implements Closeable {
   private ArrayList<ClientHandler> arrClientes;
   private HandlerListener handlerListener;
   private Object lock = new Object();
+  
+  final int maxConexoes = 30;
 
-  public Server(int porta, int nConexoes) throws IOException {
-    serverSocket = new ServerSocket(porta, nConexoes);
+  public Server(String hostBD, String userBD, String passwordBD, int porta) throws IOException {
+    serverSocket = new ServerSocket(porta, maxConexoes);
     arrClientes = new ArrayList<>();
     handlerListener = new HandlerListener();
   }
@@ -31,7 +33,7 @@ public class Server implements Closeable {
   public void aguardaConexoes() throws IOException {
     Socket socket;
     while ((socket = serverSocket.accept()) != null) {
-//      System.out.println(new Date().getTime() + " Server: Aceitou conexao");
+    	//      System.out.println(new Date().getTime() + " Server: Aceitou conexao");
       ClientHandler cl = new ClientHandler(socket);
       cl.setAlertaDadosListener(handlerListener);
       new Thread(cl).start();
@@ -53,12 +55,36 @@ public class Server implements Closeable {
         case AUTHENTICATE:
           if (requestResponseData.getObject() != null && requestResponseData.getObject() instanceof Usuario) {
             Usuario usertemp = (Usuario) requestResponseData.getObject();
-            clientHandler.setUsuario(usertemp);
-            requestResponseData.setCommand(login(clientHandler));// Retorna os dados completo do usuario logado
+            
+            // Caso o usuario não estiver logado, retorna como paramentro os dados completo do usuario
+	          if(usertemp.getId() > -1) {
+	          	requestResponseData.setCommand(LOGGED);
+	          	break;
+	          }
+	          
+	          String strLogin = usertemp.getNomeLogin();
+          	String strPassword = usertemp.getSenha();
+          	
+          	Usuario user = DbConnection.userLogin(strLogin, strPassword); 
+	          
+          	if (user == null) {
+          		requestResponseData.setCommand(UNREGISTERED);
+            	break;
+          	}
+          	
+          	requestResponseData.setObject(user);
+          	requestResponseData.setCommand(AUTHENTICATED);
+          	
+	          //clientHandler.setUsuario(usertemp);
+	          //requestResponseData.setCommand(login(clientHandler));// Retorna os dados completo do usuario logado
 
-            requestResponseData.setObject(usertemp);
+          	clientHandler.setUsuario(user);
+            
+          	//(chave/trava) http://www.guj.com.br/t/o-que-e-synchronized/139744
+	        	synchronized (lock) {
+	            arrClientes.add(clientHandler);
+	          }
 
-//            System.out.println(new Date().getTime() + " clientHandler.getUsuario() " + clientHandler.getUsuario() + " " + usertemp);
           } else {
 //            System.out.println(new Date().getTime() + " ClientHandler: Não recebeu o usuario");
             requestResponseData.setCommand(FAIL);
@@ -120,25 +146,32 @@ public class Server implements Closeable {
     }
 
     private int login(ClientHandler clientHandler) {
-      int resposta = buscarUsuarioBD(clientHandler); //Implementar a rotina para verificar no banco se exito o usuario, return boolean 
-      if (resposta == AUTHENTICATED) {
-        if (isLogado(clientHandler))// Caso o usuario não estiver logado, retorna como paramentro os dados completo do usuario
-        {
-          return LOGGED;
-        }
-        synchronized (lock) {//(chave/trava) http://www.guj.com.br/t/o-que-e-synchronized/139744
-          arrClientes.add(clientHandler);
-        }
-//        System.out.println("Nao esta logado");
+    	
+    	if (clientHandler.getUsuario().getId() > -1)// Caso o usuario não estiver logado, retorna como paramentro os dados completo do usuario
+      	return LOGGED;
+    	
+    	
+    	String strLogin = clientHandler.getUsuario().getNomeLogin();
+    	String strPassword = clientHandler.getUsuario().getSenha();
+    	
+    	Usuario user = DbConnection.userLogin(strLogin, strPassword); 
+
+      if (user == null)
+      	return UNREGISTERED;
+     
+      clientHandler.setUsuario(user);
+        
+      	//(chave/trava) http://www.guj.com.br/t/o-que-e-synchronized/139744
+    	synchronized (lock) {
+        arrClientes.add(clientHandler);
       }
-      return resposta;
+    	
+      return AUTHENTICATED;
     }
 
     private boolean isLogado(ClientHandler clientHandler) {
-//      System.out.println("Dentro do metodo isLogado " + clientHandler.getUsuario().getNomeLogin());
       for (ClientHandler onlyClientHandler : arrClientes) {
         if (clientHandler.getUsuario() != null) {
-//          System.out.println("usuario array " + clientHandler.getUsuario() + " " + onlyClientHandler);
           if (clientHandler.getUsuario().getId() == onlyClientHandler.getUsuario().getId()) {
             return true;
           }
@@ -148,15 +181,15 @@ public class Server implements Closeable {
     }
 
     private int buscarUsuarioBD(ClientHandler clientHandler) {
-      Usuario src = DbUtils.selectLoginAsUsuario(clientHandler.getUsuario().getNomeLogin());
+    	String strLogin = clientHandler.getUsuario().getNomeLogin();
+    	String strPassword = clientHandler.getUsuario().getSenha();
+    	
+    	Usuario user = DbConnection.userLogin(strLogin, strPassword); 
 
-      if (src != null) {
-        if (src.getSenha().equals(clientHandler.getUsuario().getSenha())) {
-          clientHandler.getUsuario().atualizaUser(src); // Passa todos os dados do clientes como parametro
+      if (user != null) {
+          clientHandler.setUsuario(user);
           return AUTHENTICATED;
-        }
-      }
-
+       }
       return UNREGISTERED;
     }
 
@@ -170,7 +203,7 @@ public class Server implements Closeable {
 
         }
 
-        //mandar o usuario logado pra todos da lista - o proprio usuario
+        //mandar o usuario logado pra todos da lista exceto o proprio usuario
       }
 
     }
