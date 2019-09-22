@@ -42,9 +42,9 @@ public class ClientListener implements Runnable, ICommands {
   @Override
   public void run() {
 //    System.out.println(new Date().getTime() + " Entrou no run() da Thread ClientListener");
-    conectar();
+  	conectar();
     requestResponseData.setCommand(AUTHENTICATE);
-    requestResponseData.setObject(usuario);
+    requestResponseData.setObject(new Object[]{ usuario, null, null});
     try {
       enviarDados(requestResponseData);
 //      System.out.println(new Date().getTime() + " Thread ClientListener: dados do usuario enviado " + usuario.getNomeLogin());
@@ -52,15 +52,17 @@ public class ClientListener implements Runnable, ICommands {
       Logger.getLogger(ClientListener.class.getName()).log(Level.SEVERE, null, ex);
     }
     Object obj = null;
-    try {
-//      System.out.println(new Date().getTime() + " Thread ClientListener entrou no while");
+    Object data[];
+    try {    	 
       while ((obj = recebeDados()) != null) {
         if (obj instanceof RequestResponseData) {
           requestResponseData = (RequestResponseData) obj;
           switch (requestResponseData.getCommand()) {
             case AUTHENTICATED:
-              if (requestResponseData.getObject() != null && requestResponseData.getObject() instanceof Usuario) {
-                usuario.atualizaUser((Usuario) requestResponseData.getObject());
+            	data = requestResponseData.getObject(); 
+            	if (data != null && data[0] instanceof Usuario) {
+                
+              	usuario.atualizaUser((Usuario) data[0]);
 //                System.out.println(" Endereço de memoria ClientHandler " + usuario);
 //                System.out.println(" Seja bem vindo " + usuario.getNome());
                 alertaTelaListener.AlertaTela(requestResponseData);
@@ -84,9 +86,9 @@ public class ClientListener implements Runnable, ICommands {
               break;
 
             case MESSAGE:
-
-              if (requestResponseData.getObject() != null && requestResponseData.getObject() instanceof String) {
-                String mensagem = (String) requestResponseData.getObject();
+            	data = requestResponseData.getObject(); 
+              if (data != null && data[0] instanceof String) {
+                String mensagem = (String) data[0];
 //                System.out.println("chgou mensagem " + mensagem);
                 alertaTelaListener.AlertaTela(requestResponseData);
               } else {

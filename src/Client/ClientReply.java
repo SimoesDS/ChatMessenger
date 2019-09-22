@@ -57,30 +57,19 @@ public class ClientReply implements ICommands, Runnable {
         conectar();
         //new Thread(new HandlerListener()).start();
         requestResponseData.setCommand(AUTHENTICATE);
-        requestResponseData.setObject(usuario);
+        requestResponseData.setObject(new Object [] { usuario, null, null });
         enviarDados(requestResponseData);
         System.out.println(new Date().getTime() + " Thread ClientReply dados enviado AUTHENTICATE");
       } else if (usuario != null) {
         conectar();
         requestResponseData.setCommand(MESSAGE);
-        requestResponseData.setObject(mensagem);
+        requestResponseData.setObject(new Object [] { mensagem, null, null });
         requestResponseData.setIdOwner(usuario.getId());
         requestResponseData.setIdDestino(idDestino);
         enviarDados(requestResponseData);
         System.out.println(new Date().getTime() + " Thread ClientReply dados enviado MESSAGE");
         System.out.println("Dentro do BodyPanel De: " + requestResponseData.getIdOwner() + " Para: " + requestResponseData.getIdDestino() + " O id do usuario é: " + usuario.getId());
       }
-
-      /*while (true) {
-        mensagem = "10";
-        if (mensagem != null && usuario.getId() != 0) {
-          requestResponseData.setCommand(MESSAGE);
-          requestResponseData.setIdDestino(2);
-          requestResponseData.setObject(mensagem);
-          enviarDados(requestResponseData);
-          requestResponseDataResend = new RequestResponseData(requestResponseData);
-        }
-      }*/
     } catch (UnknownHostException e1) {
       e1.printStackTrace();
     } catch (IOException e1) {

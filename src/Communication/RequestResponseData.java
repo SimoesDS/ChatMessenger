@@ -5,7 +5,7 @@ import java.io.Serializable;
 
 public class RequestResponseData implements Serializable, ICommands {
 
-  private Object obj;
+  private Object obj[];
   private int command;
   private int idDestino;
   private int idOwner;
@@ -21,15 +21,15 @@ public class RequestResponseData implements Serializable, ICommands {
   }
 
   public RequestResponseData(int code, Usuario usuario) {
-    this.obj = usuario;
+    this.obj[0] = usuario;
     this.command = code;
   }
 
-  public Object getObject() {
+  public Object[] getObject() {
     return obj;
   }
 
-  public void setObject(Object obj) {
+  public void setObject(Object obj[]) {
     this.obj = obj;
   }
 
