@@ -113,13 +113,17 @@ public class DbConnection {
 	public Usuario getUserByID(int userID) {
 		return new Usuario();
 	}
+	
+	public static Object[] login(String userName, String password) {
+		final String sqlUser = "SELECT * FROM users WHERE user_name = ? and user_password = ?";
+		final String sqlMessages = "SELECT * FROM messages WHERE message_owner = ? OR message_receiver = ? order by message_date desc";
+		final String sqlAllNameUsers = "SELECT user_name FROM users where user_id <> ?";
 
-	public static Usuario userLogin(String userName, String password) {
-		final String sql = "SELECT * FROM users WHERE user_name = ? and user_password = ?";
+		Object data[] = new Object[3];
 		try {
 			openConnection();
 
-			PreparedStatement st = conn.prepareStatement(sql);
+			PreparedStatement st = conn.prepareStatement(sqlUser);
 			st.setString(1, userName);
 			st.setString(2, password);
 			ResultSet rs = st.executeQuery();
@@ -127,8 +131,50 @@ public class DbConnection {
 			if (!rs.next())
 				return null;
 
-			return new Usuario(rs.getInt("user_id"), rs.getString("user_name"), rs.getString("user_login"),
+			Usuario user = new Usuario(rs.getInt("user_id"), rs.getString("user_name"), rs.getString("user_login"),
 					rs.getString("user_password"), true);
+
+			st = conn.prepareStatement(sqlMessages);
+			st.setInt(1, user.getId());
+			st.setInt(2, user.getId());
+			rs = st.executeQuery();
+
+			rs.last();
+			int rsRowCount = rs.getRow();
+			rs.beforeFirst();
+			Object result[][] = new Object[rsRowCount][rs.getMetaData().getColumnCount()];
+
+			int resultRow = 0;
+			while (rs.next()) {
+				// Talvez de pra trocar o resultRow pelo rs.getRow(); 
+				result[resultRow][0] = rs.getInt("message_id");
+				result[resultRow][1] = rs.getString("message_type");
+				result[resultRow][2] = rs.getInt("message_owner");
+				result[resultRow][3] = rs.getInt("message_receiver");
+				result[resultRow][4] = rs.getDate("message_date");
+				resultRow++;
+			}
+			
+			st = conn.prepareStatement(sqlAllNameUsers);
+			st.setInt(1, user.getId());
+			rs = st.executeQuery();
+
+			rs.last();
+			rsRowCount = rs.getRow();
+			rs.beforeFirst();
+			Object result2[] = new Object[rsRowCount];
+
+			resultRow = 0;
+			while (rs.next()) {
+				// Talvez de pra trocar o resultRow pelo rs.getRow(); 
+				result2[resultRow] = rs.getString("user_name");
+				resultRow++;
+			}
+			
+			data[0] = user;
+			data[1] = result2;
+			data[2] = result;
+			return data;
 
 		} catch (SQLException e) {
 			// TODO Registrar no logger
@@ -138,5 +184,6 @@ public class DbConnection {
 		}
 		return null;
 	}
+
 
 }

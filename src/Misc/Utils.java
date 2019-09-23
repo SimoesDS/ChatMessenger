@@ -2,6 +2,8 @@ package Misc;
 
 import Application.Core;
 import Application.Usuario;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -11,38 +13,29 @@ public class Utils {
 	static Usuario currUser;
 
 	public static String[][] getPreviewData() {
-		Object dbMessages[][] = Misc.DbUtils.getEnvolvedUserMessage(currUser.getId());
-		String chats[] = new String[dbMessages.length];
-		String resultTarget[][];
-		int realDialogs = 0;
-
+		Object dbMessages[][] = (Object[][]) Core.getMessages();
+		ArrayList<Object[]> messagesPrevil = new ArrayList<>();
+		ArrayList<Integer> usersID = new ArrayList<>();
+		
 		for (int i = 0; i < dbMessages.length; i++) {
-			boolean equalReceiver = (Integer.parseInt((String) dbMessages[i][3]) == currUser.getId()),
-					equalOwner = (Integer.parseInt((String) dbMessages[i][2]) == currUser.getId());
-
-			if (!Arrays.asList(chats).contains(dbMessages[i][3]) && !equalReceiver) {
-				chats[i] = (String) dbMessages[i][3];
-				realDialogs++;
+			int id = (int) dbMessages[i][2] == currUser.getId() ? (int) dbMessages[i][3] : (int) dbMessages[i][2];
+			if(!usersID.contains(id)) {
+				usersID.add(id);
+				Object msg[] = new Object[] { (String) Misc.DbUtils.findUserById(id)[1], dbMessages[i][1], dbMessages[i][4] };
+				messagesPrevil.add(msg);
+				;
 			}
-
-			if (!Arrays.asList(chats).contains(dbMessages[i][2]) && !equalOwner) {
-				chats[i] = (String) dbMessages[i][2];
-				realDialogs++;
-			}
+		}		
+		
+		String messagesPrevilToString[][] = new String[messagesPrevil.size()][3];		
+		for (int i = 0; i < messagesPrevil.size(); i++) {
+			messagesPrevilToString[i][0] = (String) messagesPrevil.get(i)[0]; 
+			messagesPrevilToString[i][1] = (String) messagesPrevil.get(i)[1];
+			//messagesPrevilToString[i][2] = (String) messagesPrevil.get(i)[2]; TODO: não está retorna a data por enquanto
 		}
-
-		resultTarget = new String[realDialogs][2];
-		int resultTargetIndex = 0;
-
-		for (int j = 0; j < chats.length; j++) {
-			if (chats[j] != null) {
-				resultTarget[resultTargetIndex][0] = (String) Misc.DbUtils.findUserById(Integer.parseInt(chats[j]))[1];
-				Object targetMessages[][] = Misc.DbUtils.getUserDialog(currUser.getId(), Integer.parseInt(chats[j]));
-				resultTarget[resultTargetIndex][1] = (String) targetMessages[targetMessages.length - 1][1];
-				resultTargetIndex++;
-			}
-		}
-		return resultTarget;
+		
+		
+		return messagesPrevilToString;
 	}
 
 	public static String[] getPreviewMessages() {
@@ -62,17 +55,6 @@ public class Utils {
 		for (int i = 0; i < auxArr.length; i++)
 			returnTarget[i] = auxArr[i][0];
 
-		return returnTarget;
-	}
-
-	public static String[] getUsers() {
-		Object auxArr[][] = Misc.DbUtils.getDifferentUsers(currUser.getId());
-		String returnTarget[] = new String[auxArr.length];
-
-		for (int i = 0; i < auxArr.length; i++)
-			returnTarget[i] = (String) auxArr[i][1];
-
-//    System.out.println(Arrays.deepToString(returnTarget));
 		return returnTarget;
 	}
 

@@ -328,6 +328,8 @@ public class BodyPanel extends JPanel {
 			case AUTHENTICATED:
 				data = requestResponseData.getObject();
 				Core.setUserSession((Usuario) data[0]);
+				Core.setUsersName((Object[]) data[1]);
+				Core.setMessages((Object[]) data[2]);
 				Utils.setUSerSession();
 				Core.updateApplication("main");
 				break;

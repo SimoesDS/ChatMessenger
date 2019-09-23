@@ -7,8 +7,7 @@ import java.util.Arrays;
 public class DbUtils {
    
   public static void insertMessage(int owner, int receiver, String message) {
-    int total = DbConnection.getTableRowsLength("messages");
-    DbConnection.insertData("messages (message_id, message_type, message_owner, message_receiver)",  (total + 1) + ", '" + message + "', " + owner + ", " + receiver);
+    DbConnection.insertData("messages (message_type, message_owner, message_receiver)",  "'" + message + "', " + owner + ", " + receiver);
   }
   
   

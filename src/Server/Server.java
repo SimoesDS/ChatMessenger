@@ -62,17 +62,19 @@ public class Server implements Closeable {
 					String strLogin = usertemp.getNomeLogin();
 					String strPassword = usertemp.getSenha();
 
-					Usuario user = DbConnection.userLogin(strLogin, strPassword);
-
-					if (user == null) {
+					//Usuario user = DbConnection.userLogin(strLogin, strPassword);
+					data = DbConnection.login(strLogin, strPassword);
+					if (data[0] == null) {
 						requestResponseData.setCommand(UNREGISTERED);
 						break;
 					}
+					
+					Usuario user = (Usuario) data[0];
 
-					Object data[] = new Object[3];
+					/*
 					data[0] = user; // Usuario logado
 					data[1] = null; // Lista de contatos
-					data[2] = null; // Conversas
+					data[2] = null; // Conversas*/
 					requestResponseData.setObject(data);
 					requestResponseData.setCommand(AUTHENTICATED);
 
@@ -141,58 +143,6 @@ public class Server implements Closeable {
 		@Override
 		public void killClientHandler(ClientHandler clientHandler) {
 			arrClientes.remove(clientHandler);
-		}
-
-		private int login(ClientHandler clientHandler) {
-
-			if (clientHandler.getUsuario().getId() > -1)// Caso o usuario não estiver logado, retorna como paramentro os dados
-																									// completo do usuario
-				return LOGGED;
-
-			String strLogin = clientHandler.getUsuario().getNomeLogin();
-			String strPassword = clientHandler.getUsuario().getSenha();
-
-			Usuario user = DbConnection.userLogin(strLogin, strPassword);
-
-			if (user == null)
-				return UNREGISTERED;
-
-			clientHandler.setUsuario(user);
-
-			// (chave/trava) http://www.guj.com.br/t/o-que-e-synchronized/139744
-			synchronized (lock) {
-				arrClientes.add(clientHandler);
-			}
-
-			return AUTHENTICATED;
-		}
-
-		private boolean isLogado(ClientHandler clientHandler) {
-			for (ClientHandler onlyClientHandler : arrClientes) {
-				if (clientHandler.getUsuario() != null) {
-					if (clientHandler.getUsuario().getId() == onlyClientHandler.getUsuario().getId()) {
-						return true;
-					}
-				}
-			}
-			return false;
-		}
-
-		private int buscarUsuarioBD(ClientHandler clientHandler) {
-			String strLogin = clientHandler.getUsuario().getNomeLogin();
-			String strPassword = clientHandler.getUsuario().getSenha();
-
-			Usuario user = DbConnection.userLogin(strLogin, strPassword);
-
-			if (user != null) {
-				clientHandler.setUsuario(user);
-				return AUTHENTICATED;
-			}
-			return UNREGISTERED;
-		}
-
-		public void destinatario() {
-
 		}
 
 		private void notifyAll(ClientHandler user) {

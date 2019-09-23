@@ -18,6 +18,8 @@ public class Core {
   private static String currentWindowStyle;
   
   private static Usuario currUser;
+  private static String allNameUsers[];
+  private static Object allMessages[];
   private static int targetId;
   
   public static void initializeApp () {
@@ -60,11 +62,16 @@ public class Core {
     switch (style) {
       case "newChat":
         scroll.setBounds(0, 100, 345, 372);
-        chatPanel.setNewChatWindow(Misc.Utils.getUsers(), users_status);
+        chatPanel.setNewChatWindow(getUsersName(), users_status);
         break;
       case "main":
-        String prUsers[] = Utils.getPreviewUsers();
-        String prMessages[] = Utils.getPreviewMessages();
+      	String data[][] = Utils.getPreviewData();
+      	String prUsers[] = new String[data.length];
+      	String prMessages[] = new String[data.length];
+      	for (int i = 0; i < data.length; i++) {
+      		prUsers[i] = data[i][0];
+      		prMessages[i] = data[i][1];
+				}
         scroll.setBounds(0, 100, 345, 372);
         chatPanel.setConversations(prUsers.length); 
         chatPanel.setMainWindow(prUsers, prMessages, users_status);
@@ -130,6 +137,25 @@ public class Core {
   
   public static Usuario getUserSession () {
     return currUser;
+  }
+  
+  public static void setUsersName (Object users[]) {
+  	allNameUsers = new String[users.length];
+  	for (int i = 0; i < users.length; i++) {
+  		allNameUsers[i] = (String) users[i];	
+		}
+  }
+  
+  public static String[] getUsersName() {
+  	return allNameUsers;
+  }
+  
+  public static void setMessages(Object msg[]) {
+  	allMessages = msg;
+  }
+  
+  public static Object[] getMessages() {
+  	return allMessages;
   }
   
   public static void setAnotherUsersStatus (boolean status[]) {
