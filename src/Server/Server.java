@@ -97,9 +97,9 @@ public class Server implements Closeable {
 				break;
 
 			case MESSAGE:
-				if (data != null && data[1] instanceof String) {
+				if (data != null && data[0] instanceof String) {
 					String mensagem = (String) data[1];
-					
+
 					if (clientHandler.getUsuario() != null) 
 						requestResponseData.setIdOwner(clientHandler.getIDUsuario());
 					

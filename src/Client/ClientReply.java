@@ -56,6 +56,7 @@ public class ClientReply implements ICommands, Runnable {
 				case MESSAGE:
 					conectar();
 					System.out.println(new Date().getTime() + " Thread ClientReply: envia MESSAGE");
+					requestResponseData.setObject(new Object [] { requestResponseData.getObject()[1], null, null });
 	        enviarDados(requestResponseData);
 					break;
 
