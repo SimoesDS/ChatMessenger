@@ -8,7 +8,11 @@ import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 
-public class Core {
+import Client.ClientReply;
+import Communication.ICommands;
+import Communication.RequestResponseData;
+
+public class Core implements ICommands{
   
   private static BodyPanel chatPanel;
   private static HeaderPanel headerPanel;
@@ -21,6 +25,9 @@ public class Core {
   private static String allNameUsers[];
   private static Object allMessages[];
   private static int targetId;
+  
+  private final static String hostServer = "localhost";
+  private final static int portServer = 5056;
   
   public static void initializeApp () {
     mainFrame = new JFrame("SChat");
@@ -200,5 +207,18 @@ public class Core {
   
   public static boolean[] getUsersStatusInfo () {
     return users_status;
+  }
+  
+	public static void replyToServer (RequestResponseData requestResponseData) {
+  	switch (requestResponseData.getCommand()) {
+		case MESSAGE:
+			new Thread(new ClientReply(hostServer, portServer, requestResponseData))
+			.start();
+			break;
+
+		default:
+			break;
+		}
+  	
   }
 }

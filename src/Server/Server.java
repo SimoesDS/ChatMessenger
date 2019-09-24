@@ -85,29 +85,10 @@ public class Server implements Closeable {
 						arrClientes.add(clientHandler);
 					}
 
-				} else {
-//            System.out.println(new Date().getTime() + " ClientHandler: Não recebeu o usuario");
+				} else
 					requestResponseData.setCommand(FAIL);
-				}
 				break;
-			case HANDLERAUTHENTICATE:
-				if (data != null && data[0] instanceof Usuario) {
-					Usuario usertemp = (Usuario) data[0];
-//            System.out.println(new Date().getTime() + " Caiu no HANDLERAUTHENTICATE usuario: " + usertemp.getNomeLogin());
-
-					if (clientHandler.equalsUser(usertemp)) {
-						requestResponseData.setCommand(AUTHENTICATED);
-
-					} else {
-						requestResponseData.setCommand(UNAUTHENTICATE);
-					}
-
-				} else {
-//            System.out.println(new Date().getTime() + " ClientHandler: Não recebeu o usuario");
-					requestResponseData.setCommand(FAIL);
-				}
-				break;
-
+				
 			case FAIL:
 				break;
 
@@ -116,24 +97,20 @@ public class Server implements Closeable {
 				break;
 
 			case MESSAGE:
-				if (data != null && data[0] instanceof String) {
-					String mensagem = (String) data[0];
-					if (clientHandler.getUsuario() != null) {
+				if (data != null && data[1] instanceof String) {
+					String mensagem = (String) data[1];
+					
+					if (clientHandler.getUsuario() != null) 
 						requestResponseData.setIdOwner(clientHandler.getIDUsuario());
-					}
-//            System.out.println("sendTO " + requestResponseData.getIdDestino());
+					
 					sendTo(requestResponseData);
 					requestResponseData.setCommand(SUCCESS);
-					// System.out.println("Server: de: " + clientHandler.getUsuario().getNome() + "
-					// para " + requestResponseData.getIdDestino() + ": "+ mensagem);
 				} else {
-//            System.out.println(new Date().getTime() + " ClientHandler: Não recebeu o usuario");
 					requestResponseData.setCommand(FAIL);
 				}
 				break;
 
 			default:
-//          System.out.println(new Date().getTime() + " ClientHandler: Comando não encontrado");
 				requestResponseData.setCommand(FAIL);
 				break;
 			}
@@ -157,12 +134,10 @@ public class Server implements Closeable {
 		}
 
 		private void sendTo(RequestResponseData requestResponseData) {
-//      System.out.println("De: " + requestResponseData.getIdOwner() + " Para: " + requestResponseData.getIdDestino());
 			for (ClientHandler clientHandler : arrClientes) {
 				if (clientHandler.getUsuario() != null) {
 					if (clientHandler.getUsuario().getId() == requestResponseData.getIdDestino()) {
 						try {
-//              System.out.println("Enviou a mensagem para: " + clientHandler.getUsuario().getId());
 							clientHandler.enviarDados(requestResponseData);
 						} catch (IOException e) {
 							e.printStackTrace();

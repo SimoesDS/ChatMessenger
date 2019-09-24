@@ -197,8 +197,16 @@ public class BodyPanel extends JPanel {
 //          System.out.println("EU SOU O " + Core.getUserSession().getNome() + " PARA O USUARIO DO ID " + targetId);
 					// System.out.println("Eu sou: " + Core.getUserSession().getNome() + " enviei
 					// para: " + targetId);
-					new Thread(new ClientReply("localhost", 5056, Core.getUserSession(), messageContainer.getText(), targetId))
-							.start();
+//					new Thread(new ClientReply("localhost", 5056, Core.getUserSession(), messageContainer.getText(), targetId))
+//							.start();
+					RequestResponseData reqRespData = new RequestResponseData();
+					reqRespData.setIdOwner(Core.getUserSession().getId());
+					reqRespData.setIdDestino(targetId);
+					reqRespData.setCommand(ICommands.MESSAGE);
+					Object data[] = new Object[] { Core.getUserSession(), messageContainer.getText(), null };
+					reqRespData.setObject(data);
+					
+					Core.replyToServer(reqRespData);
 					DbUtils.insertMessage(Core.getUserSession().getId(), Core.getTargetId(), messageContainer.getText());
 					Core.addChatMessage(messageContainer.getText(), "out");
 				}

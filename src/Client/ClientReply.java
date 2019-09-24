@@ -28,13 +28,11 @@ public class ClientReply implements ICommands, Runnable {
   private int idDestino;
 
   private RequestResponseData requestResponseData;
-  private RequestResponseData requestResponseDataResend;
-
-  public ClientReply(String strHost, int intPorta, Usuario user) {
-    usuario = user;
+  
+  public ClientReply(String strHost, int intPorta, RequestResponseData reqRespData) {
     this.strHost = strHost;
     this.intPorta = intPorta;
-    this.requestResponseData = new RequestResponseData();
+    this.requestResponseData = reqRespData;
   }
 
   public ClientReply(String strHost, int intPorta, Usuario user, String mensagem, int idDestino) {
@@ -45,33 +43,42 @@ public class ClientReply implements ICommands, Runnable {
     this.requestResponseData = new RequestResponseData();
     this.idDestino = idDestino;
   }
+  
+  
 
   @Override
   public void run() {
-    System.out.println(new Date().getTime() + " Entrou no run() da Thread ClientReply usuario " + usuario.getNomeLogin());
     Object obj = null;
 
     try {
-      if (usuario != null && usuario.getId() == 0) {
+    	if (requestResponseData.getObject()[0] instanceof Usuario) {
+    		switch (requestResponseData.getCommand()) {
+				case MESSAGE:
+					conectar();
+					System.out.println(new Date().getTime() + " Thread ClientReply: envia MESSAGE");
+	        enviarDados(requestResponseData);
+					break;
 
+				default:
+					break;
+				}
+    	}else if (usuario != null && usuario.getId() == 0) {
         conectar();
-        //new Thread(new HandlerListener()).start();
         requestResponseData.setCommand(AUTHENTICATE);
         requestResponseData.setObject(new Object [] { usuario, null, null });
         enviarDados(requestResponseData);
-        System.out.println(new Date().getTime() + " Thread ClientReply dados enviado AUTHENTICATE");
+        System.out.println(new Date().getTime() + " Thread ClientReply: " + usuario.getNomeLogin() + " precisa AUTHENTICATE");
       } else if (usuario != null) {
         conectar();
         requestResponseData.setCommand(MESSAGE);
         requestResponseData.setObject(new Object [] { mensagem, null, null });
         requestResponseData.setIdOwner(usuario.getId());
         requestResponseData.setIdDestino(idDestino);
+        System.out.println(new Date().getTime() + " Thread ClientReply: envia MESSAGE");
         enviarDados(requestResponseData);
-        System.out.println(new Date().getTime() + " Thread ClientReply dados enviado MESSAGE");
-        System.out.println("Dentro do BodyPanel De: " + requestResponseData.getIdOwner() + " Para: " + requestResponseData.getIdDestino() + " O id do usuario é: " + usuario.getId());
       }
     } catch (UnknownHostException e1) {
-      e1.printStackTrace();
+      e1.printStackTrace(); // TODO: Caso der erro de alguma forma mostrar ao usuario
     } catch (IOException e1) {
       e1.printStackTrace();
     } catch (Exception e) {

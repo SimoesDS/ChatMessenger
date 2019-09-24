@@ -16,8 +16,7 @@ public class RequestResponseData implements Serializable, ICommands {
   public RequestResponseData(RequestResponseData requestResponseData) {
 	  this.obj = requestResponseData.getObject();
 	  this.command = requestResponseData.getCommand();
-	  this.idDestino = requestResponseData.getIdDestino();
-	  
+	  this.idDestino = requestResponseData.getIdDestino();	  
   }
 
   public RequestResponseData(int code, Usuario usuario) {
