@@ -43,52 +43,46 @@ public class Server implements Closeable {
 	}
 
 	public class HandlerListener implements AlertaDadosListener, ICommands {
-		Object data[];
 
 		@Override
 		public synchronized void AlertaDados(ClientHandler clientHandler, RequestResponseData requestResponseData) {
-			data = requestResponseData.getObject();
+
 			switch (requestResponseData.getCommand()) {
 			case AUTHENTICATE:
-				if (data != null && data[0] instanceof Usuario) {
-					Usuario usertemp = (Usuario) data[0];
+				Object data[] = requestResponseData.getObject();
+				Usuario usertemp = (Usuario) data[0];
 
-					// Confere se o usuario tem ID, se ja tiver ja esta autenticado
-					if (usertemp.getId() > -1) {
-						requestResponseData.setCommand(LOGGED);
-						break;
-					}
+				// Confere se o usuario tem ID, se ja tiver ja esta autenticado
+				if (usertemp.getId() > -1) {
+					requestResponseData.setCommand(LOGGED);
+					break;
+				}
 
-					String strLogin = usertemp.getNomeLogin();
-					String strPassword = usertemp.getSenha();
+				String strLogin = usertemp.getNomeLogin();
+				String strPassword = usertemp.getSenha();
 
-					//Usuario user = DbConnection.userLogin(strLogin, strPassword);
-					data = DbConnection.login(strLogin, strPassword);
-					if (data[0] == null) {
-						requestResponseData.setCommand(UNREGISTERED);
-						break;
-					}
-					
-					Usuario user = (Usuario) data[0];
+				// Usuario user = DbConnection.userLogin(strLogin, strPassword);
+				data = DbConnection.login(strLogin, strPassword);
+				if (data[0] == null) {
+					requestResponseData.setCommand(UNREGISTERED);
+					break;
+				}
 
-					/*
-					data[0] = user; // Usuario logado
-					data[1] = null; // Lista de contatos
-					data[2] = null; // Conversas*/
-					requestResponseData.setObject(data);
-					requestResponseData.setCommand(AUTHENTICATED);
+				/*
+				 * data[0] = user; // Usuario logado data[1] = null; // Lista de contatos
+				 * data[2] = null; // Conversas
+				 */
+				requestResponseData.setObject((Usuario) data[0], (Object[]) data[1], (Object[]) data[2]);
+				requestResponseData.setCommand(AUTHENTICATED);
 
-					clientHandler.setUsuario(user);
+				clientHandler.setUsuario((Usuario) data[0]);
 
-					// (chave/trava) http://www.guj.com.br/t/o-que-e-synchronized/139744
-					synchronized (lock) {
-						arrClientes.add(clientHandler);
-					}
-
-				} else
-					requestResponseData.setCommand(FAIL);
+				// (chave/trava) http://www.guj.com.br/t/o-que-e-synchronized/139744
+				synchronized (lock) {
+					arrClientes.add(clientHandler);
+				}
 				break;
-				
+
 			case FAIL:
 				break;
 
@@ -97,17 +91,11 @@ public class Server implements Closeable {
 				break;
 
 			case MESSAGE:
-				if (data != null && data[0] instanceof String) {
-					String mensagem = (String) data[1];
+				if (clientHandler.getUsuario() != null)
+					requestResponseData.setIdOwner(clientHandler.getIDUsuario());
 
-					if (clientHandler.getUsuario() != null) 
-						requestResponseData.setIdOwner(clientHandler.getIDUsuario());
-					
-					sendTo(requestResponseData);
-					requestResponseData.setCommand(SUCCESS);
-				} else {
-					requestResponseData.setCommand(FAIL);
-				}
+				sendTo(requestResponseData);
+				requestResponseData.setCommand(SUCCESS);
 				break;
 
 			default:

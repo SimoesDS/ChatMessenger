@@ -28,8 +28,8 @@ public class RequestResponseData implements Serializable, ICommands {
     return obj;
   }
 
-  public void setObject(Object obj[]) {
-    this.obj = obj;
+  public void setObject(Usuario user, Object contacts[], Object mensage[]) {
+  	this.obj = new Object [] { user, contacts, mensage }; 
   }
 
   public int getCommand() {

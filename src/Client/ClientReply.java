@@ -56,7 +56,6 @@ public class ClientReply implements ICommands, Runnable {
 				case MESSAGE:
 					conectar();
 					System.out.println(new Date().getTime() + " Thread ClientReply: envia MESSAGE");
-					requestResponseData.setObject(new Object [] { requestResponseData.getObject()[1], null, null });
 	        enviarDados(requestResponseData);
 					break;
 
@@ -66,17 +65,9 @@ public class ClientReply implements ICommands, Runnable {
     	}else if (usuario != null && usuario.getId() == 0) {
         conectar();
         requestResponseData.setCommand(AUTHENTICATE);
-        requestResponseData.setObject(new Object [] { usuario, null, null });
+        requestResponseData.setObject( usuario, null, null);
         enviarDados(requestResponseData);
         System.out.println(new Date().getTime() + " Thread ClientReply: " + usuario.getNomeLogin() + " precisa AUTHENTICATE");
-      } else if (usuario != null) {
-        conectar();
-        requestResponseData.setCommand(MESSAGE);
-        requestResponseData.setObject(new Object [] { mensagem, null, null });
-        requestResponseData.setIdOwner(usuario.getId());
-        requestResponseData.setIdDestino(idDestino);
-        System.out.println(new Date().getTime() + " Thread ClientReply: envia MESSAGE");
-        enviarDados(requestResponseData);
       }
     } catch (UnknownHostException e1) {
       e1.printStackTrace(); // TODO: Caso der erro de alguma forma mostrar ao usuario

@@ -203,8 +203,7 @@ public class BodyPanel extends JPanel {
 					reqRespData.setIdOwner(Core.getUserSession().getId());
 					reqRespData.setIdDestino(targetId);
 					reqRespData.setCommand(ICommands.MESSAGE);
-					Object data[] = new Object[] { Core.getUserSession(), messageContainer.getText(), null };
-					reqRespData.setObject(data);
+					reqRespData.setObject(Core.getUserSession(), null, new Object[] { messageContainer.getText() });
 					
 					Core.replyToServer(reqRespData);
 					DbUtils.insertMessage(Core.getUserSession().getId(), Core.getTargetId(), messageContainer.getText());
@@ -350,7 +349,7 @@ public class BodyPanel extends JPanel {
 //          System.out.println("BodyPanel recebeu a mensagem: " + (String) requestResponseData.getObject());
 				System.out.println("ANTES DA CHEGADA NO MESSAGE DO BODY: " + requestResponseData.getIdDestino());
 				data = requestResponseData.getObject();
-				Core.addChatMessage((String) data[0], "in");
+				Core.addChatMessage((String) ((Object[]) data[2])[0], "in");
 				break;
 			case UNREGISTERED:
 				showErrorMsg("Login ou senha inválidos");

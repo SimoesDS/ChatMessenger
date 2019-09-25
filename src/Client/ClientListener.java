@@ -44,7 +44,7 @@ public class ClientListener implements Runnable, ICommands {
 //    System.out.println(new Date().getTime() + " Entrou no run() da Thread ClientListener");
   	conectar();
     requestResponseData.setCommand(AUTHENTICATE);
-    requestResponseData.setObject(new Object[]{ usuario, null, null});
+    requestResponseData.setObject(usuario, null, null);
     try {
       enviarDados(requestResponseData);
 //      System.out.println(new Date().getTime() + " Thread ClientListener: dados do usuario enviado " + usuario.getNomeLogin());
@@ -87,8 +87,7 @@ public class ClientListener implements Runnable, ICommands {
 
             case MESSAGE:
             	data = requestResponseData.getObject(); 
-              if (data != null && data[0] instanceof String) {
-                String mensagem = (String) data[0];
+              if (data != null && data[2] instanceof Object[]) {
 //                System.out.println("chgou mensagem " + mensagem);
                 alertaTelaListener.AlertaTela(requestResponseData);
               } else {

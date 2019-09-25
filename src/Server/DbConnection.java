@@ -162,17 +162,17 @@ public class DbConnection {
 			rs.last();
 			rsRowCount = rs.getRow();
 			rs.beforeFirst();
-			Object result2[] = new Object[rsRowCount];
+			Object contacts[] = new Object[rsRowCount];
 
 			resultRow = 0;
 			while (rs.next()) {
 				// Talvez de pra trocar o resultRow pelo rs.getRow(); 
-				result2[resultRow] = rs.getString("user_name");
+				contacts[resultRow] = rs.getString("user_name");
 				resultRow++;
 			}
 			
 			data[0] = user;
-			data[1] = result2;
+			data[1] = contacts;
 			data[2] = result;
 			return data;
 
