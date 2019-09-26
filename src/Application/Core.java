@@ -26,7 +26,7 @@ public class Core implements ICommands{
   private static Object allMessages[];
   private static int targetId;
   
-  private final static String hostServer = "localhost";
+  public final static String hostServer = "192.168.0.190";
   private final static int portServer = 5056;
   
   public static void initializeApp () {

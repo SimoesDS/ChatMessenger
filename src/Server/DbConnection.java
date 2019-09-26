@@ -114,7 +114,7 @@ public class DbConnection {
 		return new Usuario();
 	}
 	
-	public static Object[] login(String userName, String password) {
+	public static Object[] login(Usuario userTemp) {
 		final String sqlUser = "SELECT * FROM users WHERE user_name = ? and user_password = ?";
 		final String sqlMessages = "SELECT * FROM messages WHERE message_owner = ? OR message_receiver = ? order by message_date desc";
 		final String sqlAllNameUsers = "SELECT user_name FROM users where user_id <> ?";
@@ -124,8 +124,8 @@ public class DbConnection {
 			openConnection();
 
 			PreparedStatement st = conn.prepareStatement(sqlUser);
-			st.setString(1, userName);
-			st.setString(2, password);
+			st.setString(1, userTemp.getNomeLogin());
+			st.setString(2, userTemp.getSenha());
 			ResultSet rs = st.executeQuery();
 
 			if (!rs.next())

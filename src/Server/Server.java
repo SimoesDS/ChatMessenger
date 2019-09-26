@@ -8,8 +8,9 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Date;
 
-import Server.ClientHandler.AlertaDadosListener;
+import Server.ClientHandler.DataListener;
 
 public class Server implements Closeable {
 
@@ -29,9 +30,8 @@ public class Server implements Closeable {
 	public void aguardaConexoes() throws IOException {
 		Socket socket;
 		while ((socket = serverSocket.accept()) != null) {
-			// System.out.println(new Date().getTime() + " Server: Aceitou conexao");
 			ClientHandler cl = new ClientHandler(socket);
-			cl.setAlertaDadosListener(handlerListener);
+			cl.setDataListener(handlerListener);
 			new Thread(cl).start();
 		}
 
@@ -42,10 +42,10 @@ public class Server implements Closeable {
 		serverSocket.close();
 	}
 
-	public class HandlerListener implements AlertaDadosListener, ICommands {
+	public class HandlerListener implements DataListener, ICommands {
 
 		@Override
-		public synchronized void AlertaDados(ClientHandler clientHandler, RequestResponseData requestResponseData) {
+		public synchronized void processData(ClientHandler clientHandler, RequestResponseData requestResponseData) {
 
 			switch (requestResponseData.getCommand()) {
 			case AUTHENTICATE:
@@ -55,27 +55,25 @@ public class Server implements Closeable {
 				// Confere se o usuario tem ID, se ja tiver ja esta autenticado
 				if (usertemp.getId() > -1) {
 					requestResponseData.setCommand(LOGGED);
+					System.out.println(
+							new Date().getTime() + " Server: usuario " + clientHandler.getUsuario().getNomeLogin() + " ja está logado");
 					break;
 				}
 
-				String strLogin = usertemp.getNomeLogin();
-				String strPassword = usertemp.getSenha();
-
-				// Usuario user = DbConnection.userLogin(strLogin, strPassword);
-				data = DbConnection.login(strLogin, strPassword);
+				data = DbConnection.login(usertemp);
 				if (data[0] == null) {
 					requestResponseData.setCommand(UNREGISTERED);
+					System.out.println(new Date().getTime() + " Server: usuario/senha não encontrado!!");
 					break;
 				}
-
-				/*
-				 * data[0] = user; // Usuario logado data[1] = null; // Lista de contatos
-				 * data[2] = null; // Conversas
-				 */
+				
 				requestResponseData.setObject((Usuario) data[0], (Object[]) data[1], (Object[]) data[2]);
 				requestResponseData.setCommand(AUTHENTICATED);
 
 				clientHandler.setUsuario((Usuario) data[0]);
+				
+				System.out.println(
+						new Date().getTime() + " Server: usuario " + clientHandler.getUsuario().getNomeLogin() + " foi autenticado!!");
 
 				// (chave/trava) http://www.guj.com.br/t/o-que-e-synchronized/139744
 				synchronized (lock) {
@@ -91,6 +89,8 @@ public class Server implements Closeable {
 				break;
 
 			case MESSAGE:
+				System.out.println("Chegou mensagem De: " + requestResponseData.getIdOwner() + " Para: "
+						+ requestResponseData.getIdDestino());
 				if (clientHandler.getUsuario() != null)
 					requestResponseData.setIdOwner(clientHandler.getIDUsuario());
 
@@ -109,6 +109,11 @@ public class Server implements Closeable {
 		public void killClientHandler(ClientHandler clientHandler) {
 			arrClientes.remove(clientHandler);
 		}
+		
+		@Override
+		public boolean thisListenerAlreadyExists(ClientHandler clientHandler) {
+			return getClientHandlerEqualId(clientHandler.getIDUsuario()) != null;
+		}
 
 		private void notifyAll(ClientHandler user) {
 			for (int i = 0; i < arrClientes.size(); i++) {
@@ -122,18 +127,19 @@ public class Server implements Closeable {
 		}
 
 		private void sendTo(RequestResponseData requestResponseData) {
-			for (ClientHandler clientHandler : arrClientes) {
-				if (clientHandler.getUsuario() != null) {
-					if (clientHandler.getUsuario().getId() == requestResponseData.getIdDestino()) {
-						try {
-							clientHandler.enviarDados(requestResponseData);
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-					}
+			ClientHandler ch = getClientHandlerEqualId(requestResponseData.getIdDestino());
+			if(ch != null)
+				try {
+					ch.enviarDados(requestResponseData);
+				} catch (IOException e) {
+					e.printStackTrace();
 				}
 			}
 		}
-
-	}
+		
+		private ClientHandler getClientHandlerEqualId(int id) {
+			for (ClientHandler clientHandler : arrClientes)
+				return clientHandler.getUsuario().getId() == id ? clientHandler : null;
+			return null;			
+		}
 }

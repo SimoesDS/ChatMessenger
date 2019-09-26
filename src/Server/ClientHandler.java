@@ -17,52 +17,35 @@ public class ClientHandler implements Runnable, ICommands {
 	private IComunicacao comunicacao;
 	private Usuario usuario;
 	private RequestResponseData requestResponseData;
-	private AlertaDadosListener alertaDadosListener;
-	
+	private DataListener dataListener;
+
 	public ClientHandler(Socket conexaoCliente) throws IOException {
 		comunicacao = new SocketComunicacao(conexaoCliente);
 	}
 
 	@Override
 	public void run() {
-		System.out.println(new Date().getTime() + " ClientHandler: entrou no run()");
+		System.out.println(new Date().getTime() + " ClientHandler: ouviu alguma coisa");
 		try {
-			Object obj = null;
-			System.out.println(new Date().getTime() + " ClientHandler: vai entrar no while");
-			while (true) {
-				try{
-					obj = recebeDados();
-				}catch(IOException e){
-					alertaDadosListener.killClientHandler((ClientHandler) this);
-					return;
-				}
-				if (obj != null && obj instanceof RequestResponseData) {
-					requestResponseData = (RequestResponseData) obj;
-					System.out.println(new Date().getTime() + " ClientHandler: chegou alguma coisa " + requestResponseData.getObject());
-					
-					if(requestResponseData.getCommand() == MESSAGE)
-						System.out.println("Chegou mensagem De: " + requestResponseData.getIdOwner() + " Para: " + requestResponseData.getIdDestino());
-					
-					alertaDadosListener.AlertaDados((ClientHandler) this, requestResponseData);
+			/*
+			 * if(dataListener.thisListenerAlreadyExists(this)) return;
+			 */
+			Object obj = recebeDados();
 
-					if (requestResponseData.getCommand() == AUTHENTICATED) {
-						System.out.println(new Date().getTime() + " ClientHandler: envia dados do usuario " + requestResponseData.getObject());
-					}
+			if (obj != null && obj instanceof RequestResponseData) {
+				requestResponseData = (RequestResponseData) obj;
+				System.out.println(new Date().getTime() + " ClientHandler: chegou dados do " + ((Usuario) requestResponseData.getObject()[0]).getNomeLogin());
+				
+				dataListener.processData(this, requestResponseData);
 
-					enviarDados(requestResponseData);
-					System.out.println(new Date().getTime() + " ClientHandler: envia dados");
-
-
-					obj = null;
-				} else {
-					System.out.println(new Date().getTime() + " ClientHandler: Finalizar Thread()");
-					alertaDadosListener.killClientHandler((ClientHandler) this);
-					Thread.currentThread().interrupt();
-					return;
-				}
+				System.out.println(new Date().getTime() + " ClientHandler: envia dados para o " + ((Usuario) requestResponseData.getObject()[0]).getNome());
+				enviarDados(requestResponseData);
 			}
+
 		} catch (IOException e) {
-			e.printStackTrace();
+			dataListener.killClientHandler(this);
+		} finally {
+			Thread.currentThread().interrupt();			
 		}
 	}
 
@@ -74,14 +57,16 @@ public class ClientHandler implements Runnable, ICommands {
 		return comunicacao.recebeObject();
 	}
 
-	public interface AlertaDadosListener {
+	public interface DataListener {
+		void processData(ClientHandler clientHandler, RequestResponseData requestResponseData);
 
-		void AlertaDados(ClientHandler clientHandler, RequestResponseData requestResponseData);
 		void killClientHandler(ClientHandler clientHandler);
+
+		boolean thisListenerAlreadyExists(ClientHandler clientHandler);
 	}
 
-	public void setAlertaDadosListener(AlertaDadosListener alertaDadosListener) {
-		this.alertaDadosListener = alertaDadosListener;
+	public void setDataListener(DataListener dataListener) {
+		this.dataListener = dataListener;
 	}
 
 	public int getIDUsuario() {
@@ -90,17 +75,6 @@ public class ClientHandler implements Runnable, ICommands {
 
 	public Usuario getUsuario() {
 		return this.usuario;
-	}
-
-	public boolean equalsUser(Usuario user) {
-		if(this.usuario.getId() == user.getId()  
-				&& this.usuario.getNome() == user.getNome()
-				&& this.usuario.getNomeLogin() == user.getNomeLogin()
-				&& this.usuario.getSenha() == user.getSenha()
-				&& this.usuario.getSenha() == user.getSenha()
-				&& this.usuario.isOnline() == user.isOnline())
-			return true;
-		else return false;
 	}
 
 	public void setUsuario(Usuario usuario) {

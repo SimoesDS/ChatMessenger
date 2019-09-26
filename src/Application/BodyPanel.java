@@ -273,7 +273,7 @@ public class BodyPanel extends JPanel {
 
 //          System.out.println(new Date().getTime() + " Depois da Thread ClientReply ");
 
-					ClientListener cl = new ClientListener("localhost", 5056, Core.getUserSession());
+					ClientListener cl = new ClientListener(Core.hostServer, 5056, Core.getUserSession());
 					HandlerListener handlerListener = new HandlerListener();
 					cl.setAlertaTelaListener(handlerListener);
 					new Thread(cl).start();
