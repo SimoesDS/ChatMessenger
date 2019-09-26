@@ -3,10 +3,11 @@ package Server;
 import Communication.ICommands;
 
 import Communication.IComunicacao;
-import Communication.RequestResponseData;
 import Communication.SocketComunicacao;
+import Misc.RequestResponseData;
+import Misc.Usuario;
 import Application.Core;
-import Application.Usuario;
+
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Date;
@@ -27,9 +28,6 @@ public class ClientHandler implements Runnable, ICommands {
 	public void run() {
 		System.out.println(new Date().getTime() + " ClientHandler: ouviu alguma coisa");
 		try {
-			/*
-			 * if(dataListener.thisListenerAlreadyExists(this)) return;
-			 */
 			Object obj = recebeDados();
 
 			if (obj != null && obj instanceof RequestResponseData) {
@@ -45,7 +43,7 @@ public class ClientHandler implements Runnable, ICommands {
 		} catch (IOException e) {
 			dataListener.killClientHandler(this);
 		} finally {
-			Thread.currentThread().interrupt();			
+			Thread.currentThread().interrupt();
 		}
 	}
 
@@ -59,10 +57,7 @@ public class ClientHandler implements Runnable, ICommands {
 
 	public interface DataListener {
 		void processData(ClientHandler clientHandler, RequestResponseData requestResponseData);
-
 		void killClientHandler(ClientHandler clientHandler);
-
-		boolean thisListenerAlreadyExists(ClientHandler clientHandler);
 	}
 
 	public void setDataListener(DataListener dataListener) {

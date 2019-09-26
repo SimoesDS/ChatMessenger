@@ -5,21 +5,16 @@
  */
 package Client;
 
-import Application.Core;
-
-import Application.Usuario;
-import Communication.ICommands;
-import Communication.IComunicacao;
-import Communication.RequestResponseData;
-import Communication.SocketComunicacao;
-import Misc.DbUtils;
-import Server.ClientHandler;
-
 import java.io.IOException;
 import java.net.Socket;
-import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import Communication.ICommands;
+import Communication.IComunicacao;
+import Communication.SocketComunicacao;
+import Misc.RequestResponseData;
+import Misc.Usuario;
 
 public class ClientListener implements Runnable, ICommands {
 

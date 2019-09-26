@@ -1,4 +1,4 @@
-package Application;
+package Misc;
 
 import java.io.Serializable;
 

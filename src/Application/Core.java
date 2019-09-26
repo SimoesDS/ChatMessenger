@@ -1,16 +1,18 @@
 package Application;
 
-import Misc.Utils;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 
 import Client.ClientReply;
 import Communication.ICommands;
-import Communication.RequestResponseData;
+import Misc.RequestResponseData;
+import Misc.Usuario;
+import Misc.Utils;
 
 public class Core implements ICommands{
   

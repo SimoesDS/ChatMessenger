@@ -1,10 +1,8 @@
 package Misc;
 
 import Application.Core;
-import Application.Usuario;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,7 +29,7 @@ public class Utils {
 		for (int i = 0; i < messagesPrevil.size(); i++) {
 			messagesPrevilToString[i][0] = (String) messagesPrevil.get(i)[0]; 
 			messagesPrevilToString[i][1] = (String) messagesPrevil.get(i)[1];
-			//messagesPrevilToString[i][2] = (String) messagesPrevil.get(i)[2]; TODO: não está retorna a data por enquanto
+			//messagesPrevilToString[i][2] = (String) messagesPrevil.get(i)[2]; TODO: nÃ£o estÃ¡ retorna a data por enquanto
 		}
 		
 		
@@ -91,7 +89,7 @@ public class Utils {
 		currUser = Core.getUserSession();
 	}
 
-	// SE NAO ESTIVER SENDO USADA AO FINAL DE TUDO, DEIXARÁ DE EXISTIR
+	// SE NAO ESTIVER SENDO USADA AO FINAL DE TUDO, DEIXARÃ� DE EXISTIR
 	public static String[] getRegexMatches(String text, String regex) {
 		Pattern pattern = Pattern.compile(regex);
 		Matcher matcher = pattern.matcher(text);

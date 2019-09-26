@@ -1,8 +1,9 @@
 package Server;
 
 import Communication.ICommands;
-import Communication.RequestResponseData;
-import Application.Usuario;
+import Misc.RequestResponseData;
+import Misc.Usuario;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -52,11 +53,11 @@ public class Server implements Closeable {
 				Object data[] = requestResponseData.getObject();
 				Usuario usertemp = (Usuario) data[0];
 
-				// Confere se o usuario tem ID, se ja tiver ja esta autenticado
+				// Confere se o usuario tem ID, se ja tiver ja esta logado
 				if (usertemp.getId() > -1) {
 					requestResponseData.setCommand(LOGGED);
-					System.out.println(
-							new Date().getTime() + " Server: usuario " + clientHandler.getUsuario().getNomeLogin() + " ja está logado");
+					System.out.println(new Date().getTime() + " Server: usuario " + clientHandler.getUsuario().getNomeLogin()
+							+ " ja está logado");
 					break;
 				}
 
@@ -66,14 +67,14 @@ public class Server implements Closeable {
 					System.out.println(new Date().getTime() + " Server: usuario/senha não encontrado!!");
 					break;
 				}
-				
+
 				requestResponseData.setObject((Usuario) data[0], (Object[]) data[1], (Object[]) data[2]);
 				requestResponseData.setCommand(AUTHENTICATED);
 
 				clientHandler.setUsuario((Usuario) data[0]);
-				
-				System.out.println(
-						new Date().getTime() + " Server: usuario " + clientHandler.getUsuario().getNomeLogin() + " foi autenticado!!");
+
+				System.out.println(new Date().getTime() + " Server: usuario " + clientHandler.getUsuario().getNomeLogin()
+						+ " foi autenticado!!");
 
 				// (chave/trava) http://www.guj.com.br/t/o-que-e-synchronized/139744
 				synchronized (lock) {
@@ -89,8 +90,8 @@ public class Server implements Closeable {
 				break;
 
 			case MESSAGE:
-				System.out.println("Chegou mensagem De: " + requestResponseData.getIdOwner() + " Para: "
-						+ requestResponseData.getIdDestino());
+				System.out.println(
+						"Chegou mensagem De: " + requestResponseData.getIdOwner() + " Para: " + requestResponseData.getIdDestino());
 				if (clientHandler.getUsuario() != null)
 					requestResponseData.setIdOwner(clientHandler.getIDUsuario());
 
@@ -109,11 +110,6 @@ public class Server implements Closeable {
 		public void killClientHandler(ClientHandler clientHandler) {
 			arrClientes.remove(clientHandler);
 		}
-		
-		@Override
-		public boolean thisListenerAlreadyExists(ClientHandler clientHandler) {
-			return getClientHandlerEqualId(clientHandler.getIDUsuario()) != null;
-		}
 
 		private void notifyAll(ClientHandler user) {
 			for (int i = 0; i < arrClientes.size(); i++) {
@@ -128,18 +124,18 @@ public class Server implements Closeable {
 
 		private void sendTo(RequestResponseData requestResponseData) {
 			ClientHandler ch = getClientHandlerEqualId(requestResponseData.getIdDestino());
-			if(ch != null)
+			if (ch != null)
 				try {
 					ch.enviarDados(requestResponseData);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
-			}
 		}
-		
-		private ClientHandler getClientHandlerEqualId(int id) {
-			for (ClientHandler clientHandler : arrClientes)
-				return clientHandler.getUsuario().getId() == id ? clientHandler : null;
-			return null;			
-		}
+	}
+
+	private ClientHandler getClientHandlerEqualId(int id) {
+		for (ClientHandler clientHandler : arrClientes)
+			return clientHandler.getUsuario().getId() == id ? clientHandler : null;
+		return null;
+	}
 }

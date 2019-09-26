@@ -1,21 +1,18 @@
 package Communication;
 
 import java.io.IOException;
-
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
 public class SocketComunicacao implements IComunicacao{
-
-	private Socket socket;
+	
 	private InputStream inpStr;
 	private OutputStream outStr;
 	private IManipularObject mObject;
 
 	public SocketComunicacao(Socket socket) throws IOException {
 		mObject = new IManipularObject();
-		this.socket = socket;
 		inpStr = socket.getInputStream();
 		outStr = socket.getOutputStream();
 	}

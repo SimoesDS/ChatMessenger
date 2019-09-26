@@ -1,8 +1,10 @@
 package Server;
 
 import java.sql.Statement;
+import java.util.ArrayList;
 
-import Application.Usuario;
+import Misc.Message;
+import Misc.Usuario;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -119,7 +121,7 @@ public class DbConnection {
 		final String sqlMessages = "SELECT * FROM messages WHERE message_owner = ? OR message_receiver = ? order by message_date desc";
 		final String sqlAllNameUsers = "SELECT user_name FROM users where user_id <> ?";
 
-		Object data[] = new Object[3];
+		Object data[] = new Object[4];
 		try {
 			openConnection();
 
@@ -142,16 +144,18 @@ public class DbConnection {
 			rs.last();
 			int rsRowCount = rs.getRow();
 			rs.beforeFirst();
-			Object result[][] = new Object[rsRowCount][rs.getMetaData().getColumnCount()];
-
+			Object messages[][] = new Object[rsRowCount][rs.getMetaData().getColumnCount()];
+			ArrayList<Message> messagesArr = new ArrayList<Message>();
+			
 			int resultRow = 0;
 			while (rs.next()) {
 				// Talvez de pra trocar o resultRow pelo rs.getRow(); 
-				result[resultRow][0] = rs.getInt("message_id");
-				result[resultRow][1] = rs.getString("message_type");
-				result[resultRow][2] = rs.getInt("message_owner");
-				result[resultRow][3] = rs.getInt("message_receiver");
-				result[resultRow][4] = rs.getDate("message_date");
+				messages[resultRow][0] = rs.getInt("message_id");
+				messages[resultRow][1] = rs.getString("message_type");
+				messages[resultRow][2] = rs.getInt("message_owner");
+				messages[resultRow][3] = rs.getInt("message_receiver");
+				messages[resultRow][4] = rs.getDate("message_date");
+				messagesArr.add(new Message(rs.getString("message_type"), rs.getInt("message_receiver")));
 				resultRow++;
 			}
 			
@@ -168,14 +172,16 @@ public class DbConnection {
 			while (rs.next()) {
 				// Talvez de pra trocar o resultRow pelo rs.getRow(); 
 				contacts[resultRow] = rs.getString("user_name");
+				
 				resultRow++;
 			}
 			
 			data[0] = user;
 			data[1] = contacts;
-			data[2] = result;
+			data[2] = messages;
+			data[3] = messagesArr;
+			
 			return data;
-
 		} catch (SQLException e) {
 			// TODO Registrar no logger
 			e.printStackTrace();
@@ -184,6 +190,5 @@ public class DbConnection {
 		}
 		return null;
 	}
-
 
 }

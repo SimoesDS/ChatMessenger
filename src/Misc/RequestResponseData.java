@@ -1,14 +1,18 @@
-package Communication;
+package Misc;
 
-import Application.Usuario;
+import Communication.ICommands;
+
 import java.io.Serializable;
+import java.util.ArrayList;
 
 public class RequestResponseData implements Serializable, ICommands {
 
-  private Object obj[];
+	private Object obj[];
   private int command;
   private int idDestino;
   private int idOwner;
+  private ArrayList<Usuario> contacts;
+  private ArrayList<Message> messages; 
 
   public RequestResponseData() {
   }
@@ -55,5 +59,21 @@ public class RequestResponseData implements Serializable, ICommands {
   public void setIdOwner(int idOwner) {
     this.idOwner = idOwner;
   }
+
+	public ArrayList<Usuario> getContacts() {
+		return contacts;
+	}
+
+	public void setContacts(ArrayList<Usuario> contacts) {
+		this.contacts = contacts;
+	}
+
+	public ArrayList<Message> getMessages() {
+		return messages;
+	}
+
+	public void setMessages(ArrayList<Message> messages) {
+		this.messages = messages;
+	}
 
 }

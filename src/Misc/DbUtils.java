@@ -1,8 +1,6 @@
 package Misc;
 
 import Server.DbConnection;
-import Application.Usuario;
-import java.util.Arrays;
 
 public class DbUtils {
    

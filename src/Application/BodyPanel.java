@@ -1,18 +1,11 @@
 package Application;
 
-import Client.*;
-import Client.ClientListener.AlertaTelaListener;
-import Communication.ICommands;
-import Communication.RequestResponseData;
-import Misc.DbUtils;
-
-import Misc.Utils;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.Date;
+
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
@@ -20,6 +13,14 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+
+import Client.ClientListener;
+import Client.ClientListener.AlertaTelaListener;
+import Communication.ICommands;
+import Misc.DbUtils;
+import Misc.RequestResponseData;
+import Misc.Usuario;
+import Misc.Utils;
 
 public class BodyPanel extends JPanel {
 

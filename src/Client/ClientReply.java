@@ -1,20 +1,16 @@
 package Client;
 //https://www.programiz.com/java-programming/examples/convert-outputstream-string
 
-import Communication.IComunicacao;
-
-import Communication.ICommands;
-import Communication.RequestResponseData;
-import Communication.SocketComunicacao;
-import Application.Core;
-import Application.Usuario;
-
-import java.io.*;
+import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import Communication.ICommands;
+import Communication.IComunicacao;
+import Communication.SocketComunicacao;
+import Misc.RequestResponseData;
+import Misc.Usuario;
 
 public class ClientReply implements ICommands, Runnable {
 
