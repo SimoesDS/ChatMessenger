@@ -14,9 +14,8 @@ import java.util.Date;
 
 public class ClientHandler implements Runnable, ICommands {
 
-	private Socket serverClient = null;
 	private IComunicacao comunicacao;
-	private Usuario usuario;
+	private int idOwner = -1;
 	private RequestResponseData requestResponseData;
 	private DataListener dataListener;
 
@@ -32,11 +31,13 @@ public class ClientHandler implements Runnable, ICommands {
 
 			if (obj != null && obj instanceof RequestResponseData) {
 				requestResponseData = (RequestResponseData) obj;
-				System.out.println(new Date().getTime() + " ClientHandler: chegou dados do " + ((Usuario) requestResponseData.getObject()[0]).getNomeLogin());
-				
+				System.out.println(new Date().getTime() + " ClientHandler: chegou dados do "
+						+ requestResponseData.getIdOwner());
+
 				dataListener.processData(this, requestResponseData);
 
-				System.out.println(new Date().getTime() + " ClientHandler: envia dados para o " + ((Usuario) requestResponseData.getObject()[0]).getNome());
+				System.out.println(new Date().getTime() + " ClientHandler: envia dados para o "
+						+ requestResponseData.getIdOwner());
 				enviarDados(requestResponseData);
 			}
 
@@ -57,6 +58,7 @@ public class ClientHandler implements Runnable, ICommands {
 
 	public interface DataListener {
 		void processData(ClientHandler clientHandler, RequestResponseData requestResponseData);
+
 		void killClientHandler(ClientHandler clientHandler);
 	}
 
@@ -64,15 +66,11 @@ public class ClientHandler implements Runnable, ICommands {
 		this.dataListener = dataListener;
 	}
 
-	public int getIDUsuario() {
-		return this.usuario.getId();
+	public int getIdOwne() {
+		return this.idOwner;
 	}
 
-	public Usuario getUsuario() {
-		return this.usuario;
-	}
-
-	public void setUsuario(Usuario usuario) {
-		this.usuario = usuario;
+	public void setIdOwner(int id) {
+		this.idOwner = id;
 	}
 }

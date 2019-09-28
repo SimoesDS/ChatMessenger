@@ -207,7 +207,7 @@ public class BodyPanel extends JPanel {
 					reqRespData.setIdDestino(targetId);
 					reqRespData.setCommand(ICommands.MESSAGE);
 					reqRespData.setObject(Core.getUserSession(), null, new Object[] { messageContainer.getText() });
-					
+
 					Core.replyToServer(reqRespData);
 					DbUtils.insertMessage(Core.getUserSession().getId(), Core.getTargetId(), messageContainer.getText());
 					Core.addChatMessage(messageContainer.getText(), "out");
@@ -331,17 +331,15 @@ public class BodyPanel extends JPanel {
 
 	class HandlerListener implements AlertaTelaListener, ICommands {
 		Object data[];
-		
+
 		@Override
 		public void AlertaTela(RequestResponseData requestResponseData) {
 			switch (requestResponseData.getCommand()) {
 			case AUTHENTICATED:
 				data = requestResponseData.getObject();
-				Core.setUserSession((Usuario) data[0]);
-				Core.setUsersName((Object[]) data[1]);
-				Core.setMessages((Object[]) data[2]);
-				Core.setUsersNameArr((ArrayList<Usuario>) data[3]);
-				Core.setMessagesArr((ArrayList<Message>) data[4]);
+				Core.setUserSession(requestResponseData.getOwner());
+				Core.setMessages(requestResponseData.getMessages());
+				Core.setUsersName(requestResponseData.getContacts());
 				Utils.setUSerSession();
 				Core.updateApplication("main");
 				break;

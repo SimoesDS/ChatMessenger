@@ -3,11 +3,8 @@ package Server;
 import java.sql.Statement;
 import java.util.ArrayList;
 
-import javax.naming.CommunicationException;
-
-import com.mysql.cj.jdbc.exceptions.SQLError;
-
 import Misc.Message;
+import Misc.RequestResponseData;
 import Misc.Usuario;
 
 import java.sql.Connection;
@@ -34,23 +31,6 @@ public class DbConnection {
 		closeConnection();
 	}
 
-	public static int getTableRowsLength(String table) {
-		try {
-			openConnection();
-			Statement st = conn.createStatement();
-			ResultSet rs = st.executeQuery("SELECT count(*) FROM messages");
-			int total = 0;
-			while (rs.next()) {
-				total = rs.getInt(1);
-			}
-			closeConnection();
-			return total;
-		} catch (SQLException e) {
-			System.out.println("SQLException in rowsLength");
-		}
-		return 0;
-	}
-
 	public static Object[][] getData(String table, String target, String where) {
 		try {
 			openConnection();
@@ -61,7 +41,6 @@ public class DbConnection {
 			rs.beforeFirst();
 			Object result[][] = new Object[rsRowCount][rs.getMetaData().getColumnCount()];
 
-			
 			if (rsRowCount == 0)
 				return result;
 
@@ -94,14 +73,13 @@ public class DbConnection {
 				resultRow++;
 			}
 			closeConnection();
-			return result;     
+			return result;
 		} catch (SQLException e) {
 			System.out.println("SQLException in getData()"); // TODO: Deve registrar no logger
 		}
-		
+
 		return new Object[0][0];
 	}
-		
 
 	private static void openConnection() throws SQLException {
 		conn = DriverManager.getConnection(URL, USER, PASSWORD);
@@ -114,13 +92,13 @@ public class DbConnection {
 			System.out.println("Invalid query");
 		}
 	}
-	
-	public static Object[] login(Usuario userTemp) {
+
+	public static RequestResponseData login(Usuario userTemp) {
 		final String sqlUser = "SELECT * FROM users WHERE user_name = ? and user_password = ?";
 		final String sqlMessages = "SELECT * FROM messages WHERE message_owner = ? OR message_receiver = ? order by message_date desc";
 		final String sqlAllNameUsers = "SELECT user_id, user_name FROM users where user_id <> ?";
 
-		Object data[] = new Object[5];
+		RequestResponseData reqRespData = new RequestResponseData();
 		try {
 			openConnection();
 
@@ -132,8 +110,8 @@ public class DbConnection {
 			if (!rs.next())
 				return null;
 
-			Usuario user = new Usuario(rs.getInt("user_id"), rs.getString("user_name"), rs.getString("user_login"),
-					rs.getString("user_password"), true);
+			Usuario user = new Usuario(rs.getInt("user_id"), rs.getString("user_name"), rs.getString("user_login"), null,
+					true);
 
 			st = conn.prepareStatement(sqlMessages);
 			st.setInt(1, user.getId());
@@ -143,22 +121,14 @@ public class DbConnection {
 			rs.last();
 			int rsRowCount = rs.getRow();
 			rs.beforeFirst();
-			Object messages[][] = new Object[rsRowCount][rs.getMetaData().getColumnCount()];
-			ArrayList<Message> messagesArr = new ArrayList<Message>();
-			
+
+			ArrayList<Message> messages = new ArrayList<Message>();
+
 			while (rs.next()) {
-				int resultRow = rs.getRow() - 1; 
-				messages[resultRow][0] = rs.getInt("message_id");
-				messages[resultRow][1] = rs.getString("message_type");
-				messages[resultRow][2] = rs.getInt("message_owner");
-				messages[resultRow][3] = rs.getInt("message_receiver");
-				messages[resultRow][4] = rs.getDate("message_date");
-				messagesArr.add(new Message(rs.getInt("message_owner"),
-						rs.getInt("message_receiver"),
-						rs.getString("message_type"),
-						rs.getDate("message_date")));
+				messages.add(new Message(rs.getInt("message_owner"), rs.getInt("message_receiver"),
+						rs.getString("message_type"), rs.getDate("message_date")));
 			}
-			
+
 			st = conn.prepareStatement(sqlAllNameUsers);
 			st.setInt(1, user.getId());
 			rs = st.executeQuery();
@@ -166,21 +136,16 @@ public class DbConnection {
 			rs.last();
 			rsRowCount = rs.getRow();
 			rs.beforeFirst();
-			ArrayList<Usuario> contactsArr = new ArrayList<Usuario>();
-			Object contacts[] = new Object[rsRowCount];
+			ArrayList<Usuario> contacts = new ArrayList<Usuario>();
 
-			while (rs.next()) {
-				contacts[rs.getRow() - 1] = rs.getString("user_name");
-				contactsArr.add(new Usuario(rs.getInt("user_id"), rs.getString("user_name"), true));
-			}
-			
-			data[0] = user;
-			data[1] = contacts;
-			data[2] = messages;
-			data[3] = contactsArr;
-			data[4] = messagesArr;
-			
-			return data;
+			while (rs.next())
+				contacts.add(new Usuario(rs.getInt("user_id"), rs.getString("user_name"), true));
+
+			reqRespData.setOwner(user);
+			reqRespData.setContacts(contacts);
+			reqRespData.setMessages(messages);
+
+			return reqRespData;
 		} catch (SQLException e) {
 			// TODO Registrar no logger
 			e.printStackTrace();

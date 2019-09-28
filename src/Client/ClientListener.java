@@ -20,7 +20,6 @@ public class ClientListener implements Runnable, ICommands {
 
 	private IComunicacao comunicacao;
 	private RequestResponseData requestResponseData;
-	private RequestResponseData requestResponseDataResend;
 	private AlertaTelaListener alertaTelaListener;
 	private Usuario usuario;
 
@@ -38,7 +37,7 @@ public class ClientListener implements Runnable, ICommands {
 	public void run() {
 		conectar();
 		requestResponseData.setCommand(AUTHENTICATE);
-		requestResponseData.setObject(usuario, null, null);
+		requestResponseData.setOwner(usuario);
 		try {
 			enviarDados(requestResponseData);
 		} catch (IOException ex) {
@@ -47,6 +46,7 @@ public class ClientListener implements Runnable, ICommands {
 		Object obj = null;
 		Object data[];
 	// TODO: Tem que colocar a condição de saida do while quando o usuario fizer logoff
+		// TODO: Quando perde a conexao com o serv fica dando erro infinito
 		while (true) { 
 			try {
 				if ((obj = recebeDados()) != null) {
@@ -54,8 +54,7 @@ public class ClientListener implements Runnable, ICommands {
 						requestResponseData = (RequestResponseData) obj;
 						switch (requestResponseData.getCommand()) {
 						case AUTHENTICATED:
-							data = requestResponseData.getObject();
-							if (data != null && data[0] instanceof Usuario) {
+							if (requestResponseData != null) {
 								alertaTelaListener.AlertaTela(requestResponseData);
 								requestResponseData.setCommand(SUCCESS);
 								requestResponseData.clearObject();

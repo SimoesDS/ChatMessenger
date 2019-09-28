@@ -50,33 +50,33 @@ public class Server implements Closeable {
 
 			switch (requestResponseData.getCommand()) {
 			case AUTHENTICATE:
-				Object data[] = requestResponseData.getObject();
-				Usuario usertemp = (Usuario) data[0];
+				Usuario user = requestResponseData.getOwner();
 
 				// Confere se o usuario tem ID, se ja tiver ja esta logado
-				if (usertemp.getId() > -1) {
+				if (user.getId() > -1) {
 					requestResponseData.setCommand(LOGGED);
-					System.out.println(new Date().getTime() + " Server: usuario " + clientHandler.getUsuario().getNomeLogin()
+					System.out.println(new Date().getTime() + " Server: usuario " + user.getNomeLogin()
 							+ " ja est� logado");
 					break;
 				}
 
-				data = DbConnection.login(usertemp);
-				if (data == null || data[0] == null) {
+				 
+				RequestResponseData reqRespData = DbConnection.login(user);
+				if (reqRespData == null) {
 					requestResponseData.setCommand(UNREGISTERED);
 					System.out.println(new Date().getTime() + " Server: usuario/senha não encontrado!!");
 					break;
 				}
 
-				ArrayList<Usuario> _contacts = (ArrayList<Usuario>) data[3];
-				ArrayList<Message> _messages = (ArrayList<Message>) data[4];
-				requestResponseData.setObject((Usuario) data[0], (Object[]) data[1], (Object[]) data[2], _contacts, _messages);
+				requestResponseData.setContacts(reqRespData.getContacts());
+				requestResponseData.setMessages(reqRespData.getMessages());
+				requestResponseData.setOwner(reqRespData.getOwner());
 				requestResponseData.setCommand(AUTHENTICATED);
 
-				clientHandler.setUsuario((Usuario) data[0]);
+				clientHandler.setIdOwner(reqRespData.getOwner().getId());
 
-				System.out.println(new Date().getTime() + " Server: usuario " + clientHandler.getUsuario().getNomeLogin()
-						+ " foi autenticado!!");
+				System.out.println(new Date().getTime() + " Server: usuario " + reqRespData.getOwner().getNome()
+						+ " esta online!");
 
 				// (chave/trava) http://www.guj.com.br/t/o-que-e-synchronized/139744
 				synchronized (lock) {
@@ -94,8 +94,6 @@ public class Server implements Closeable {
 			case MESSAGE:
 				System.out.println(
 						"Chegou mensagem De: " + requestResponseData.getIdOwner() + " Para: " + requestResponseData.getIdDestino());
-				if (clientHandler.getUsuario() != null)
-					requestResponseData.setIdOwner(clientHandler.getIDUsuario());
 
 				sendTo(requestResponseData);
 				
@@ -138,7 +136,8 @@ public class Server implements Closeable {
 
 	private ClientHandler getClientHandlerEqualId(int id) {
 		for (ClientHandler clientHandler : arrClientes)
-			return clientHandler.getUsuario().getId() == id ? clientHandler : null;
+			 if(clientHandler.getIdOwne() == id) 
+				 return clientHandler;
 		return null;
 	}
 }

@@ -11,6 +11,7 @@ public class RequestResponseData implements Serializable, ICommands {
   private int command;
   private int idDestino;
   private int idOwner;
+  private Usuario owner;
   private ArrayList<Usuario> contacts;
   private ArrayList<Message> messages; 
 
@@ -82,5 +83,13 @@ public class RequestResponseData implements Serializable, ICommands {
 
 	public void clearObject() {
 		this.obj = null;
+	}
+
+	public Usuario getOwner() {
+		return owner;
+	}
+
+	public void setOwner(Usuario owner) {
+		this.owner = owner;
 	}
 }

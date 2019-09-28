@@ -11,8 +11,8 @@ public class Utils {
 	static Usuario currUser;
 	
 	public static ArrayList<Object[]> getPreviewData() {
-		ArrayList<Usuario> usersArr = Core.getUsersNameArr();
-		ArrayList<Message> messages = Core.getMessagesArr();
+		ArrayList<Usuario> usersArr = Core.getUsersName();
+		ArrayList<Message> messages = Core.getMessages();
 		ArrayList<Object[]> messagesPrevil = new ArrayList<>();
 		ArrayList<Integer> usersID = new ArrayList<>();
 

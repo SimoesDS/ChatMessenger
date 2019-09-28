@@ -26,10 +26,8 @@ public class Core implements ICommands {
 	private static String currentWindowStyle;
 
 	private static Usuario currUser;
-	private static String allNameUsers[];
-	private static ArrayList<Usuario> allNameUsersArr;
-	private static Object allMessages[];
-	private static ArrayList<Message> allMessagesArr;
+	private static ArrayList<Usuario> allNameUsers;
+	private static ArrayList<Message> allMessages;
 	private static int targetId;
 
 	public final static String hostServer = "localhost";
@@ -76,7 +74,15 @@ public class Core implements ICommands {
 		switch (style) {
 		case "newChat":
 			scroll.setBounds(0, 100, 345, 372);
-			chatPanel.setNewChatWindow(getUsersName(), users_status);
+			
+			ArrayList<Usuario> users = getUsersName();
+			String names[] = new String[users.size()];
+			
+			for (int i = 0; i < users.size(); i++) {
+				names[i] = users.get(i).getNome();
+			}
+			// TODO: gambiarra temporaria
+			chatPanel.setNewChatWindow(names, users_status);
 			break;
 		case "main":
 			// TODO: try temporario
@@ -84,7 +90,7 @@ public class Core implements ICommands {
 				ArrayList<Object[]> data = Utils.getPreviewData();
 				String prUsers[] = new String[data.size()];
 				String prMessages[] = new String[data.size()];
-				
+
 				for (int j = 0; j < data.size(); j++) {
 					prUsers[j] = (String) ((Object[]) data.get(j))[0];
 					prMessages[j] = (String) ((Object[]) data.get(j))[1];
@@ -160,39 +166,20 @@ public class Core implements ICommands {
 		return currUser;
 	}
 
-	public static void setUsersName(Object users[]) {
-		allNameUsers = new String[users.length];
-		for (int i = 0; i < users.length; i++) {
-			allNameUsers[i] = (String) users[i];
-		}
+	public static void setUsersName(ArrayList<Usuario> users) {
+		allNameUsers = users;
 	}
 
-	public static void setUsersNameArr(ArrayList<Usuario> users) {
-		allNameUsersArr = users;
-	}
-
-	public static String[] getUsersName() {
+	public static ArrayList<Usuario> getUsersName() {
 		return allNameUsers;
 	}
 
-	public static ArrayList<Usuario> getUsersNameArr() {
-		return allNameUsersArr;
-	}
-
-	public static void setMessages(Object msg[]) {
-		allMessages = msg;
-	}
-
-	public static Object[] getMessages() {
+	public static ArrayList<Message> getMessages() {
 		return allMessages;
 	}
 
-	public static ArrayList<Message> getMessagesArr() {
-		return allMessagesArr;
-	}
-
-	public static void setMessagesArr(ArrayList<Message> messageArr) {
-		allMessagesArr = messageArr;
+	public static void setMessages(ArrayList<Message> message) {
+		allMessages = message;
 	}
 
 	public static void setAnotherUsersStatus(boolean status[]) {
