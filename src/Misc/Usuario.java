@@ -23,6 +23,12 @@ public class Usuario implements Serializable {
     this.status = status;
   }
   
+  public Usuario (int id, String nome, boolean status) {
+    this.id = id;
+    this.nome = nome;
+    this.status = status;
+  }
+  
   public Usuario (String nomeLogin, String senha) {
     this.nomeLogin = nomeLogin;
     this.senha = senha;

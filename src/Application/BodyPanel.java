@@ -5,6 +5,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -18,6 +19,7 @@ import Client.ClientListener;
 import Client.ClientListener.AlertaTelaListener;
 import Communication.ICommands;
 import Misc.DbUtils;
+import Misc.Message;
 import Misc.RequestResponseData;
 import Misc.Usuario;
 import Misc.Utils;
@@ -338,6 +340,8 @@ public class BodyPanel extends JPanel {
 				Core.setUserSession((Usuario) data[0]);
 				Core.setUsersName((Object[]) data[1]);
 				Core.setMessages((Object[]) data[2]);
+				Core.setUsersNameArr((ArrayList<Usuario>) data[3]);
+				Core.setMessagesArr((ArrayList<Message>) data[4]);
 				Utils.setUSerSession();
 				Core.updateApplication("main");
 				break;

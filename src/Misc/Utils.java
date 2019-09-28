@@ -9,51 +9,26 @@ import java.util.regex.Pattern;
 public class Utils {
 
 	static Usuario currUser;
-
-	public static String[][] getPreviewData() {
-		Object dbMessages[][] = (Object[][]) Core.getMessages();
+	
+	public static ArrayList<Object[]> getPreviewData() {
+		ArrayList<Usuario> usersArr = Core.getUsersNameArr();
+		ArrayList<Message> messages = Core.getMessagesArr();
 		ArrayList<Object[]> messagesPrevil = new ArrayList<>();
 		ArrayList<Integer> usersID = new ArrayList<>();
-		
-		for (int i = 0; i < dbMessages.length; i++) {
-			int id = (int) dbMessages[i][2] == currUser.getId() ? (int) dbMessages[i][3] : (int) dbMessages[i][2];
-			if(!usersID.contains(id)) {
-				usersID.add(id);
-				Object msg[] = new Object[] { (String) Misc.DbUtils.findUserById(id)[1], dbMessages[i][1], dbMessages[i][4] };
-				messagesPrevil.add(msg);
-				;
-			}
-		}		
-		
-		String messagesPrevilToString[][] = new String[messagesPrevil.size()][3];		
-		for (int i = 0; i < messagesPrevil.size(); i++) {
-			messagesPrevilToString[i][0] = (String) messagesPrevil.get(i)[0]; 
-			messagesPrevilToString[i][1] = (String) messagesPrevil.get(i)[1];
-			//messagesPrevilToString[i][2] = (String) messagesPrevil.get(i)[2]; TODO: nÃ£o estÃ¡ retorna a data por enquanto
-		}
-		
-		
-		return messagesPrevilToString;
-	}
 
-	public static String[] getPreviewMessages() {
-		String auxArr[][] = getPreviewData();
-		String returnTarget[] = new String[auxArr.length];
+		if (messages.size() > 0)
+			messages.forEach((msg) -> {
+				int id = msg.getIdSender() == currUser.getId() ? msg.getIdReceiver() : msg.getIdSender();
+				if (!usersID.contains(id)) {
+					usersID.add(id);
+						usersArr.forEach((usr) -> {
+							if (usr.getId() == id)
+								messagesPrevil.add(new Object[] { usr.getNome(), msg.getMessage() });
+						});
+				}
+			});
 
-		for (int i = 0; i < auxArr.length; i++)
-			returnTarget[i] = (auxArr[i][1].length() >= 52) ? auxArr[i][1].substring(0, 49) + "..." : auxArr[i][1];
-
-		return returnTarget;
-	}
-
-	public static String[] getPreviewUsers() {
-		String auxArr[][] = getPreviewData();
-		String returnTarget[] = new String[auxArr.length];
-
-		for (int i = 0; i < auxArr.length; i++)
-			returnTarget[i] = auxArr[i][0];
-
-		return returnTarget;
+		return messagesPrevil;
 	}
 
 	public static String[][] getEntireDialog(int targetId) {

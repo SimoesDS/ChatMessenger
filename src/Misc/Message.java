@@ -9,20 +9,25 @@ public class Message implements Serializable{
 	private String _message;
 	private Date _date;
 	
-	public Message(String message, int idReceiver) {
+	public Message(int idSender, int idReceiver, String message, Date date) {
+		this._idSender = idSender;
+		this._idReceiver = idReceiver;
 		this._message = message;
-		this._idReceiver = idReceiver;		
+		this._date = date;
 	}
 	
 	public int getIdReceiver() {
 		return _idReceiver;
 	}
+	
 	public void setIdReceiver(int idReceiver) {
 		this._idReceiver = idReceiver;
 	}
+	
 	public String getMessage() {
 		return _message;
 	}
+	
 	public void setMessage(String message) {
 		this._message = message;
 	}

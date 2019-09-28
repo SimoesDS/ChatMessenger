@@ -2,7 +2,7 @@ package Server;
 
 import Communication.ICommands;
 import Misc.RequestResponseData;
-import Misc.Usuario;
+import Misc.*;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -57,18 +57,20 @@ public class Server implements Closeable {
 				if (usertemp.getId() > -1) {
 					requestResponseData.setCommand(LOGGED);
 					System.out.println(new Date().getTime() + " Server: usuario " + clientHandler.getUsuario().getNomeLogin()
-							+ " ja está logado");
+							+ " ja estï¿½ logado");
 					break;
 				}
 
 				data = DbConnection.login(usertemp);
-				if (data[0] == null) {
+				if (data == null || data[0] == null) {
 					requestResponseData.setCommand(UNREGISTERED);
-					System.out.println(new Date().getTime() + " Server: usuario/senha não encontrado!!");
+					System.out.println(new Date().getTime() + " Server: usuario/senha nÃ£o encontrado!!");
 					break;
 				}
 
-				requestResponseData.setObject((Usuario) data[0], (Object[]) data[1], (Object[]) data[2]);
+				ArrayList<Usuario> _contacts = (ArrayList<Usuario>) data[3];
+				ArrayList<Message> _messages = (ArrayList<Message>) data[4];
+				requestResponseData.setObject((Usuario) data[0], (Object[]) data[1], (Object[]) data[2], _contacts, _messages);
 				requestResponseData.setCommand(AUTHENTICATED);
 
 				clientHandler.setUsuario((Usuario) data[0]);
@@ -96,7 +98,7 @@ public class Server implements Closeable {
 					requestResponseData.setIdOwner(clientHandler.getIDUsuario());
 
 				sendTo(requestResponseData);
-				requestResponseData.setCommand(SUCCESS);
+				
 				break;
 
 			default:
@@ -127,6 +129,7 @@ public class Server implements Closeable {
 			if (ch != null)
 				try {
 					ch.enviarDados(requestResponseData);
+					requestResponseData.setCommand(SUCCESS);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}

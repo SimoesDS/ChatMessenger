@@ -3,6 +3,10 @@ package Server;
 import java.sql.Statement;
 import java.util.ArrayList;
 
+import javax.naming.CommunicationException;
+
+import com.mysql.cj.jdbc.exceptions.SQLError;
+
 import Misc.Message;
 import Misc.Usuario;
 
@@ -13,7 +17,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class DbConnection {
-	private static final String DRIVER = "com.mysql.jdbc.Driver";
 	private static final String URL = "jdbc:mysql://db4free.net:3306/schat7";
 	private static final String USER = "schat7";
 	private static final String PASSWORD = "-2*5.betzNeb$hc~";
@@ -100,7 +103,7 @@ public class DbConnection {
 	}
 		
 
-	public static void openConnection() throws SQLException {
+	private static void openConnection() throws SQLException {
 		conn = DriverManager.getConnection(URL, USER, PASSWORD);
 	}
 
@@ -111,17 +114,13 @@ public class DbConnection {
 			System.out.println("Invalid query");
 		}
 	}
-
-	public Usuario getUserByID(int userID) {
-		return new Usuario();
-	}
 	
 	public static Object[] login(Usuario userTemp) {
 		final String sqlUser = "SELECT * FROM users WHERE user_name = ? and user_password = ?";
 		final String sqlMessages = "SELECT * FROM messages WHERE message_owner = ? OR message_receiver = ? order by message_date desc";
-		final String sqlAllNameUsers = "SELECT user_name FROM users where user_id <> ?";
+		final String sqlAllNameUsers = "SELECT user_id, user_name FROM users where user_id <> ?";
 
-		Object data[] = new Object[4];
+		Object data[] = new Object[5];
 		try {
 			openConnection();
 
@@ -147,16 +146,17 @@ public class DbConnection {
 			Object messages[][] = new Object[rsRowCount][rs.getMetaData().getColumnCount()];
 			ArrayList<Message> messagesArr = new ArrayList<Message>();
 			
-			int resultRow = 0;
 			while (rs.next()) {
-				// Talvez de pra trocar o resultRow pelo rs.getRow(); 
+				int resultRow = rs.getRow() - 1; 
 				messages[resultRow][0] = rs.getInt("message_id");
 				messages[resultRow][1] = rs.getString("message_type");
 				messages[resultRow][2] = rs.getInt("message_owner");
 				messages[resultRow][3] = rs.getInt("message_receiver");
 				messages[resultRow][4] = rs.getDate("message_date");
-				messagesArr.add(new Message(rs.getString("message_type"), rs.getInt("message_receiver")));
-				resultRow++;
+				messagesArr.add(new Message(rs.getInt("message_owner"),
+						rs.getInt("message_receiver"),
+						rs.getString("message_type"),
+						rs.getDate("message_date")));
 			}
 			
 			st = conn.prepareStatement(sqlAllNameUsers);
@@ -166,20 +166,19 @@ public class DbConnection {
 			rs.last();
 			rsRowCount = rs.getRow();
 			rs.beforeFirst();
+			ArrayList<Usuario> contactsArr = new ArrayList<Usuario>();
 			Object contacts[] = new Object[rsRowCount];
 
-			resultRow = 0;
 			while (rs.next()) {
-				// Talvez de pra trocar o resultRow pelo rs.getRow(); 
-				contacts[resultRow] = rs.getString("user_name");
-				
-				resultRow++;
+				contacts[rs.getRow() - 1] = rs.getString("user_name");
+				contactsArr.add(new Usuario(rs.getInt("user_id"), rs.getString("user_name"), true));
 			}
 			
 			data[0] = user;
 			data[1] = contacts;
 			data[2] = messages;
-			data[3] = messagesArr;
+			data[3] = contactsArr;
+			data[4] = messagesArr;
 			
 			return data;
 		} catch (SQLException e) {

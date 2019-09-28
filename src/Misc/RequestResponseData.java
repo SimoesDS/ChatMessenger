@@ -32,6 +32,10 @@ public class RequestResponseData implements Serializable, ICommands {
     return obj;
   }
 
+  public void setObject(Usuario user, Object contacts[], Object message[], ArrayList<Usuario> _contacts, ArrayList<Message> _messages) {
+  	this.obj = new Object [] { user, contacts, message, _contacts, _messages }; 
+  }
+  
   public void setObject(Usuario user, Object contacts[], Object mensage[]) {
   	this.obj = new Object [] { user, contacts, mensage }; 
   }
@@ -76,4 +80,7 @@ public class RequestResponseData implements Serializable, ICommands {
 		this.messages = messages;
 	}
 
+	public void clearObject() {
+		this.obj = null;
+	}
 }
