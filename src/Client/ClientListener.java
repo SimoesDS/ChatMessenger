@@ -21,13 +21,11 @@ public class ClientListener implements Runnable, ICommands {
 	private IComunicacao comunicacao;
 	private RequestResponseData requestResponseData;
 	private AlertaTelaListener alertaTelaListener;
-	private Usuario usuario;
 
 	private String strHost;
 	private int intPorta;
 
-	public ClientListener(String strHost, int intPorta, Usuario user) {
-		usuario = user;
+	public ClientListener(String strHost, int intPorta) {
 		this.strHost = strHost;
 		this.intPorta = intPorta;
 		this.requestResponseData = new RequestResponseData();
@@ -36,18 +34,11 @@ public class ClientListener implements Runnable, ICommands {
 	@Override
 	public void run() {
 		conectar();
-		requestResponseData.setCommand(AUTHENTICATE);
-		requestResponseData.setOwner(usuario);
-		try {
-			enviarDados(requestResponseData);
-		} catch (IOException ex) {
-			Logger.getLogger(ClientListener.class.getName()).log(Level.SEVERE, null, ex);
-		}
 		Object obj = null;
-		Object data[];
-	// TODO: Tem que colocar a condição de saida do while quando o usuario fizer logoff
+		// TODO: Tem que colocar a condição de saida do while quando o usuario fizer
+		// logoff
 		// TODO: Quando perde a conexao com o serv fica dando erro infinito
-		while (true) { 
+		while (true) {
 			try {
 				if ((obj = recebeDados()) != null) {
 					if (obj instanceof RequestResponseData) {
@@ -56,12 +47,10 @@ public class ClientListener implements Runnable, ICommands {
 						case AUTHENTICATED:
 							if (requestResponseData != null) {
 								alertaTelaListener.AlertaTela(requestResponseData);
-								requestResponseData.setCommand(SUCCESS);
 								requestResponseData.clearObject();
-								enviarDados(requestResponseData);
 							} else {
-								requestResponseData.setCommand(FAIL);
-								requestResponseData.clearObject();
+								requestResponseData = new RequestResponseData();
+								requestResponseData.setCommand(AUTHENTICATE);
 								enviarDados(requestResponseData);
 							}
 							break;
@@ -75,17 +64,10 @@ public class ClientListener implements Runnable, ICommands {
 							break;
 
 						case MESSAGE:
-							data = requestResponseData.getObject();
-							if (data != null && data[2] instanceof Object[]) {
-								alertaTelaListener.AlertaTela(requestResponseData);
-								requestResponseData.clearObject();
-								requestResponseData.setCommand(SUCCESS);
-								enviarDados(requestResponseData);
-							} else {
-								requestResponseData.clearObject();
-								requestResponseData.setCommand(FAIL);								
-								enviarDados(requestResponseData);
-							}
+							alertaTelaListener.AlertaTela(requestResponseData);
+							requestResponseData.clearObject();
+							// requestResponseData.setCommand(SUCCESS);
+							// enviarDados(requestResponseData);
 							break;
 
 						case SUCCESS:
@@ -104,7 +86,7 @@ public class ClientListener implements Runnable, ICommands {
 				} catch (IOException e1) {
 					// TODO: Se der erro tem que voltar para tela de login
 					e.printStackTrace();
-				}				
+				}
 			}
 		}
 	}

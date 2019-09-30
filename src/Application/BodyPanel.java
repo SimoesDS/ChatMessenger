@@ -17,6 +17,7 @@ import javax.swing.JTextField;
 
 import Client.ClientListener;
 import Client.ClientListener.AlertaTelaListener;
+import Client.ClientReply;
 import Communication.ICommands;
 import Misc.DbUtils;
 import Misc.Message;
@@ -67,7 +68,7 @@ public class BodyPanel extends JPanel {
 			currPanel.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseClicked(MouseEvent e) {
-					int targetId = (int) Misc.DbUtils.findUserByName(names[index])[0];
+					int targetId = Core.getIdUserByName(names[index]);
 
 					Usuario user = new Usuario(); // TODO: USER JA DEVE ESTAR ERRADO
 					user.setNome(names[index]); // TODO: TA ERRADO = AQUI PRECISA DAR UM JEITO DE PEGAR O USUARIO DESTINO
@@ -123,10 +124,9 @@ public class BodyPanel extends JPanel {
 				currPanel.addMouseListener(new MouseAdapter() {
 					@Override
 					public void mouseClicked(MouseEvent e) {
-						Object targetData[] = Misc.DbUtils.findUserByName(names[index]);
 						Usuario user = new Usuario();
 						user.setNome(names[index]); // TA ERRADO = AQUI PRECISA DAR UM JEITO DE PEGAR O USUARIO DESTINO
-						user.setId((int) targetData[0]);
+						user.setId(Core.getIdUserByName(names[index]));
 						Core.buildDialogWindow(user); // TODO: Conversas já estarão no cliente
 					}
 
@@ -206,10 +206,9 @@ public class BodyPanel extends JPanel {
 					reqRespData.setIdOwner(Core.getUserSession().getId());
 					reqRespData.setIdDestino(targetId);
 					reqRespData.setCommand(ICommands.MESSAGE);
-					reqRespData.setObject(Core.getUserSession(), null, new Object[] { messageContainer.getText() });
+					reqRespData.setMsg(messageContainer.getText());
 
 					Core.replyToServer(reqRespData);
-					DbUtils.insertMessage(Core.getUserSession().getId(), Core.getTargetId(), messageContainer.getText());
 					Core.addChatMessage(messageContainer.getText(), "out");
 				}
 			}
@@ -272,19 +271,17 @@ public class BodyPanel extends JPanel {
 					Usuario user = new Usuario(usernameField.getText(), passwordField.getText());
 					Core.setUserSession(user);
 					Utils.setUSerSession();
-//          System.out.println(new Date().getTime() + " Botao enter ");
 
-//          System.out.println(new Date().getTime() + " Depois da Thread ClientReply ");
-
-					ClientListener cl = new ClientListener(Core.hostServer, 5056, Core.getUserSession());
+					ClientListener cl = new ClientListener(Core.hostServer, 5056);
 					HandlerListener handlerListener = new HandlerListener();
 					cl.setAlertaTelaListener(handlerListener);
 					new Thread(cl).start();
+					
+					RequestResponseData reqRespData = new RequestResponseData();
+					reqRespData.setCommand(ICommands.AUTHENTICATE);
+					reqRespData.setOwner(user);
 
-//          System.out.println(new Date().getTime() + " Endereço de memoria depois " + Core.getUserSession());
-//          System.out.println(new Date().getTime() + " Depois da Thread ClientListener ");
-
-//          System.out.println(new Date().getTime() + " Depois do While");
+					new Thread(new ClientReply(Core.hostServer, Core.portServer, reqRespData)).start();
 				} else {
 					showErrorMsg("Login ou senha inválidos");
 				}
@@ -330,13 +327,10 @@ public class BodyPanel extends JPanel {
 	}
 
 	class HandlerListener implements AlertaTelaListener, ICommands {
-		Object data[];
-
 		@Override
 		public void AlertaTela(RequestResponseData requestResponseData) {
 			switch (requestResponseData.getCommand()) {
 			case AUTHENTICATED:
-				data = requestResponseData.getObject();
 				Core.setUserSession(requestResponseData.getOwner());
 				Core.setMessages(requestResponseData.getMessages());
 				Core.setUsersName(requestResponseData.getContacts());
@@ -345,14 +339,12 @@ public class BodyPanel extends JPanel {
 				break;
 
 			case LOGGED:
-//				Faz alguma coisa caso o usuario estiver logado
+				showErrorMsg("Usuário já está logado!");
 				break;
 
 			case MESSAGE:
-//          System.out.println("BodyPanel recebeu a mensagem: " + (String) requestResponseData.getObject());
-				System.out.println("ANTES DA CHEGADA NO MESSAGE DO BODY: " + requestResponseData.getIdDestino());
-				data = requestResponseData.getObject();
-				Core.addChatMessage((String) ((Object[]) data[2])[0], "in");
+				System.out.println("BodyPanel recebeu a mensagem de: " + requestResponseData.getIdOwner());
+				Core.addChatMessage(requestResponseData.getMsg(), "in");
 				break;
 			case UNREGISTERED:
 				showErrorMsg("Login ou senha inválidos");

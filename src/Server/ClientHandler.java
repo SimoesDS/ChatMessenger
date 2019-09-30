@@ -36,8 +36,12 @@ public class ClientHandler implements Runnable, ICommands {
 
 				dataListener.processData(this, requestResponseData);
 
-				System.out.println(new Date().getTime() + " ClientHandler: envia dados para o "
+				if(requestResponseData.getCommand() == AUTHENTICATE)
+					System.out.println(new Date().getTime() + " ClientHandler: envia dados para o "
 						+ requestResponseData.getIdOwner());
+				else
+					System.out.println(new Date().getTime() + " ClientHandler: envia dados para o "
+							+ requestResponseData.getOwner().getId());
 				enviarDados(requestResponseData);
 			}
 

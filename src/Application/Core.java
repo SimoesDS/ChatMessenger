@@ -3,13 +3,16 @@ package Application;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 
+import Client.ClientListener;
 import Client.ClientReply;
+import Client.ClientListener.AlertaTelaListener;
 import Communication.ICommands;
 import Misc.Message;
 import Misc.RequestResponseData;
@@ -31,7 +34,7 @@ public class Core implements ICommands {
 	private static int targetId;
 
 	public final static String hostServer = "localhost";
-	private final static int portServer = 5056;
+	public final static int portServer = 5056;
 
 	public static void initializeApp() {
 		mainFrame = new JFrame("SChat");
@@ -74,37 +77,32 @@ public class Core implements ICommands {
 		switch (style) {
 		case "newChat":
 			scroll.setBounds(0, 100, 345, 372);
-			
+
+			// TODO: gambiarra temporaria
 			ArrayList<Usuario> users = getUsersName();
 			String names[] = new String[users.size()];
-			
 			for (int i = 0; i < users.size(); i++) {
 				names[i] = users.get(i).getNome();
 			}
-			// TODO: gambiarra temporaria
+
 			chatPanel.setNewChatWindow(names, users_status);
 			break;
 		case "main":
-			// TODO: try temporario
-			try {
-				ArrayList<Object[]> data = Utils.getPreviewData();
-				String prUsers[] = new String[data.size()];
-				String prMessages[] = new String[data.size()];
+			ArrayList<Object[]> data = Utils.getPreviewData();
+			String prUsers[] = new String[data.size()];
+			String prMessages[] = new String[data.size()];
 
-				for (int j = 0; j < data.size(); j++) {
-					prUsers[j] = (String) ((Object[]) data.get(j))[0];
-					prMessages[j] = (String) ((Object[]) data.get(j))[1];
-				}
-
-				scroll.setBounds(0, 100, 345, 372);
-				chatPanel.setConversations(prUsers.length);
-				chatPanel.setMainWindow(prUsers, prMessages, users_status);
-				headerPanel.setMainWindow();
-				headerPanel.setSize(350, 100);
-				setTopScrollPosition();
-			} catch (Exception e) {
-				e.getStackTrace();
+			for (int j = 0; j < data.size(); j++) {
+				prUsers[j] = (String) ((Object[]) data.get(j))[0];
+				prMessages[j] = (String) ((Object[]) data.get(j))[1];
 			}
+
+			scroll.setBounds(0, 100, 345, 372);
+			chatPanel.setConversations(prUsers.length);
+			chatPanel.setMainWindow(prUsers, prMessages, users_status);
+			headerPanel.setMainWindow();
+			headerPanel.setSize(350, 100);
+			setTopScrollPosition();
 			break;
 		case "login":
 			scroll.setBounds(0, 320, 345, 152);
@@ -226,15 +224,23 @@ public class Core implements ICommands {
 		return users_status;
 	}
 
+	public static int getIdUserByName(String name) {
+		for (Usuario user : allNameUsers)
+			if (user.getNome() == name)
+				return user.getId();
+
+		return -1;
+	}
+
 	public static void replyToServer(RequestResponseData requestResponseData) {
 		switch (requestResponseData.getCommand()) {
-		case MESSAGE:
-			new Thread(new ClientReply(hostServer, portServer, requestResponseData)).start();
+		case AUTHENTICATE:
+			new Thread(new ClientReply(hostServer, portServer, requestResponseData))
+			.start();
 			break;
 
 		default:
 			break;
 		}
-
 	}
 }

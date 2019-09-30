@@ -26,9 +26,34 @@ public class DbConnection {
 			Statement st = conn.createStatement();
 			st.executeUpdate("INSERT INTO " + table + " VALUES (" + values + ")");
 		} catch (SQLException e) {
-			System.out.println("SQLException in insertData()");
+			e.getStackTrace();
+		} finally {
+			try {
+				closeConnection();
+			} catch (Exception e2) {
+			}
 		}
-		closeConnection();
+	}
+
+	public static int saveMessage(RequestResponseData reqRespData) {
+		final String sqlIsertMsg = "INSERT INTO message(message_type, message_owner, message_receiver) VALUES (?, ?, ?)";;
+		try {
+			openConnection();
+			PreparedStatement ps = conn.prepareStatement(sqlIsertMsg);
+			ps.setString(1, reqRespData.getMsg());
+			ps.setInt(2, reqRespData.getIdOwner());
+			ps.setInt(3, reqRespData.getIdDestino());
+			
+			return ps.executeUpdate();
+		} catch (SQLException e) {
+			e.getStackTrace();
+		} finally {
+			try {
+				closeConnection();
+			} catch (Exception e2) {
+			}
+		}
+		return 0;
 	}
 
 	public static Object[][] getData(String table, String target, String where) {
@@ -118,10 +143,6 @@ public class DbConnection {
 			st.setInt(2, user.getId());
 			rs = st.executeQuery();
 
-			rs.last();
-			int rsRowCount = rs.getRow();
-			rs.beforeFirst();
-
 			ArrayList<Message> messages = new ArrayList<Message>();
 
 			while (rs.next()) {
@@ -133,9 +154,6 @@ public class DbConnection {
 			st.setInt(1, user.getId());
 			rs = st.executeQuery();
 
-			rs.last();
-			rsRowCount = rs.getRow();
-			rs.beforeFirst();
 			ArrayList<Usuario> contacts = new ArrayList<Usuario>();
 
 			while (rs.next())

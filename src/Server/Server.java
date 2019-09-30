@@ -55,12 +55,10 @@ public class Server implements Closeable {
 				// Confere se o usuario tem ID, se ja tiver ja esta logado
 				if (user.getId() > -1) {
 					requestResponseData.setCommand(LOGGED);
-					System.out.println(new Date().getTime() + " Server: usuario " + user.getNomeLogin()
-							+ " ja est� logado");
+					System.out.println(new Date().getTime() + " Server: usuario " + user.getNomeLogin() + " ja est� logado");
 					break;
 				}
 
-				 
 				RequestResponseData reqRespData = DbConnection.login(user);
 				if (reqRespData == null) {
 					requestResponseData.setCommand(UNREGISTERED);
@@ -75,8 +73,8 @@ public class Server implements Closeable {
 
 				clientHandler.setIdOwner(reqRespData.getOwner().getId());
 
-				System.out.println(new Date().getTime() + " Server: usuario " + reqRespData.getOwner().getNome()
-						+ " esta online!");
+				System.out
+						.println(new Date().getTime() + " Server: usuario " + reqRespData.getOwner().getNome() + " esta online!");
 
 				// (chave/trava) http://www.guj.com.br/t/o-que-e-synchronized/139744
 				synchronized (lock) {
@@ -95,8 +93,13 @@ public class Server implements Closeable {
 				System.out.println(
 						"Chegou mensagem De: " + requestResponseData.getIdOwner() + " Para: " + requestResponseData.getIdDestino());
 
-				sendTo(requestResponseData);
-				
+				new Thread(new Runnable() {
+					@Override
+					public void run() {
+						if (DbConnection.saveMessage(requestResponseData) > 0)
+							sendTo(requestResponseData);
+					}
+				}).start();
 				break;
 
 			default:
@@ -122,7 +125,7 @@ public class Server implements Closeable {
 
 		}
 
-		private void sendTo(RequestResponseData requestResponseData) {
+		private synchronized void sendTo(RequestResponseData requestResponseData) {
 			ClientHandler ch = getClientHandlerEqualId(requestResponseData.getIdDestino());
 			if (ch != null)
 				try {
@@ -136,8 +139,8 @@ public class Server implements Closeable {
 
 	private ClientHandler getClientHandlerEqualId(int id) {
 		for (ClientHandler clientHandler : arrClientes)
-			 if(clientHandler.getIdOwne() == id) 
-				 return clientHandler;
+			if (clientHandler.getIdOwne() == id)
+				return clientHandler;
 		return null;
 	}
 }
