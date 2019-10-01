@@ -41,8 +41,8 @@ public class ClientHandler implements Runnable, ICommands {
 						+ requestResponseData.getIdOwner());
 				else
 					System.out.println(new Date().getTime() + " ClientHandler: envia dados para o "
-							+ requestResponseData.getOwner().getId());
-				enviarDados(requestResponseData);
+							+ requestResponseData.getIdOwner());
+				//enviarDados(requestResponseData);
 			}
 
 		} catch (IOException e) {

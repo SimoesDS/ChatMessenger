@@ -29,6 +29,7 @@ public class BodyPanel extends JPanel {
 
 	private int conversations;
 	private final int CHAT_HEIGHT = 76;
+	HandlerListener handlerListener = new HandlerListener();
 
 	BodyPanel(int width, int conversations) {
 		this.conversations = conversations;
@@ -196,19 +197,8 @@ public class BodyPanel extends JPanel {
 		sendIconLabel.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				if (messageContainer.getText().length() > 0) {
-//          System.out.println("EU SOU O " + Core.getUserSession().getNome() + " PARA O USUARIO DO ID " + targetId);
-					// System.out.println("Eu sou: " + Core.getUserSession().getNome() + " enviei
-					// para: " + targetId);
-//					new Thread(new ClientReply("localhost", 5056, Core.getUserSession(), messageContainer.getText(), targetId))
-//							.start();
-					RequestResponseData reqRespData = new RequestResponseData();
-					reqRespData.setIdOwner(Core.getUserSession().getId());
-					reqRespData.setIdDestino(targetId);
-					reqRespData.setCommand(ICommands.MESSAGE);
-					reqRespData.setMsg(messageContainer.getText());
-
-					Core.replyToServer(reqRespData);
+				if (messageContainer.getText().length() > 0) {			
+					Core.sendMessage(targetId, messageContainer.getText());
 					Core.addChatMessage(messageContainer.getText(), "out");
 				}
 			}
@@ -268,20 +258,9 @@ public class BodyPanel extends JPanel {
 			public void mouseClicked(MouseEvent e) {
 
 				if (usernameField.getText().length() > 0 && passwordField.getText().length() > 0) {
-					Usuario user = new Usuario(usernameField.getText(), passwordField.getText());
-					Core.setUserSession(user);
-					Utils.setUSerSession();
-
-					ClientListener cl = new ClientListener(Core.hostServer, 5056);
-					HandlerListener handlerListener = new HandlerListener();
-					cl.setAlertaTelaListener(handlerListener);
-					new Thread(cl).start();
 					
-					RequestResponseData reqRespData = new RequestResponseData();
-					reqRespData.setCommand(ICommands.AUTHENTICATE);
-					reqRespData.setOwner(user);
-
-					new Thread(new ClientReply(Core.hostServer, Core.portServer, reqRespData)).start();
+					Usuario user = new Usuario(usernameField.getText(), passwordField.getText());
+					Core.login(user);
 				} else {
 					showErrorMsg("Login ou senha inválidos");
 				}
@@ -310,6 +289,7 @@ public class BodyPanel extends JPanel {
 	public void showErrorMsg(String message) {
 		JLabel invalidEntries = new JLabel(message);
 		invalidEntries.setBounds(97, 125, 150, 20);
+		//85, 0, 116, 30
 		invalidEntries.setForeground(new Color(178, 3, 3));
 		invalidEntries.setVisible(true);
 

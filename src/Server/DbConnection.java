@@ -20,40 +20,23 @@ public class DbConnection {
 
 	private static Connection conn;
 
-	public static void insertData(String table, String values) {
-		try {
-			openConnection();
-			Statement st = conn.createStatement();
-			st.executeUpdate("INSERT INTO " + table + " VALUES (" + values + ")");
-		} catch (SQLException e) {
-			e.getStackTrace();
-		} finally {
-			try {
-				closeConnection();
-			} catch (Exception e2) {
-			}
-		}
-	}
-
 	public static int saveMessage(RequestResponseData reqRespData) {
-		final String sqlIsertMsg = "INSERT INTO message(message_type, message_owner, message_receiver) VALUES (?, ?, ?)";;
+		final String sqlIsertMsg = "INSERT INTO messages (message_type, message_owner, message_receiver) VALUES (?, ?, ?)";
+		;
 		try {
 			openConnection();
 			PreparedStatement ps = conn.prepareStatement(sqlIsertMsg);
 			ps.setString(1, reqRespData.getMsg());
 			ps.setInt(2, reqRespData.getIdOwner());
 			ps.setInt(3, reqRespData.getIdDestino());
-			
+
 			return ps.executeUpdate();
 		} catch (SQLException e) {
 			e.getStackTrace();
 		} finally {
-			try {
-				closeConnection();
-			} catch (Exception e2) {
-			}
+			closeConnection();
 		}
-		return 0;
+		return -1;
 	}
 
 	public static Object[][] getData(String table, String target, String where) {
@@ -114,7 +97,7 @@ public class DbConnection {
 		try {
 			conn.close();
 		} catch (SQLException e) {
-			System.out.println("Invalid query");
+			e.printStackTrace();
 		}
 	}
 
@@ -159,6 +142,7 @@ public class DbConnection {
 			while (rs.next())
 				contacts.add(new Usuario(rs.getInt("user_id"), rs.getString("user_name"), true));
 
+			reqRespData.setIdDestino(user.getId());
 			reqRespData.setOwner(user);
 			reqRespData.setContacts(contacts);
 			reqRespData.setMessages(messages);

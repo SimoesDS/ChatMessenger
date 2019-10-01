@@ -31,15 +31,22 @@ public class ClientListener implements Runnable, ICommands {
 		this.requestResponseData = new RequestResponseData();
 	}
 
+	public ClientListener(String strHost, int intPorta, IComunicacao conn) {
+		this.strHost = strHost;
+		this.intPorta = intPorta;
+		this.requestResponseData = new RequestResponseData();
+		this.comunicacao = conn;
+	}
+
 	@Override
 	public void run() {
-		conectar();
 		Object obj = null;
 		// TODO: Tem que colocar a condição de saida do while quando o usuario fizer
 		// logoff
 		// TODO: Quando perde a conexao com o serv fica dando erro infinito
-		while (true) {
-			try {
+		try {
+			while (true) {
+
 				if ((obj = recebeDados()) != null) {
 					if (obj instanceof RequestResponseData) {
 						requestResponseData = (RequestResponseData) obj;
@@ -79,14 +86,14 @@ public class ClientListener implements Runnable, ICommands {
 						}
 					}
 				}
-			} catch (Exception e) {
-				try {
-					requestResponseData.clearObject();
-					enviarDados(requestResponseData);
-				} catch (IOException e1) {
-					// TODO: Se der erro tem que voltar para tela de login
-					e.printStackTrace();
-				}
+			}
+		} catch (Exception e) {
+			try {
+				requestResponseData.clearObject();
+				enviarDados(requestResponseData);
+			} catch (IOException e1) {
+				// TODO: Se der erro tem que voltar para tela de login
+				e.printStackTrace();
 			}
 		}
 	}

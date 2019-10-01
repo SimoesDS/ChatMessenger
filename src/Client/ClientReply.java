@@ -28,18 +28,27 @@ public class ClientReply implements ICommands, Runnable {
 		this.intPorta = intPorta;
 		this.requestResponseData = reqRespData;
 	}
+	
+	public ClientReply(String strHost, int intPorta, RequestResponseData reqRespData, IComunicacao conn) {
+		this.strHost = strHost;
+		this.intPorta = intPorta;
+		this.requestResponseData = reqRespData;
+		this.comunicacao = conn;
+	}
 
 	@Override
 	public void run() {
 		try {
 			switch (requestResponseData.getCommand()) {
 			case AUTHENTICATE:
-				connect();
+				//connect();
 				requestResponseData.setCommand(AUTHENTICATE);
 				requestResponseData.setObject(usuario, null, null);
 				enviarDados(requestResponseData);
 				System.out.println(
 						new Date().getTime() + " ClientReply: Autenticar " + requestResponseData.getOwner().getNomeLogin());
+				
+				
 				break;
 
 			case MESSAGE:
@@ -67,12 +76,13 @@ public class ClientReply implements ICommands, Runnable {
 		comunicacao.enviarObject(obj);
 	}
 
-	public void connect() {
+	public IComunicacao connect() {
 		try {
 			comunicacao = new SocketComunicacao(new Socket(strHost, intPorta));
 		} catch (IOException e) {
 			System.out.println("Client: Erro ao conectar no servidor");
 			e.printStackTrace();
 		}
+		return comunicacao;
 	}
 }

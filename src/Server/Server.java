@@ -63,9 +63,15 @@ public class Server implements Closeable {
 				if (reqRespData == null) {
 					requestResponseData.setCommand(UNREGISTERED);
 					System.out.println(new Date().getTime() + " Server: usuario/senha não encontrado!!");
+					try {
+						clientHandler.enviarDados(requestResponseData);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
 					break;
 				}
 
+				requestResponseData.setIdDestino(reqRespData.getIdDestino());
 				requestResponseData.setContacts(reqRespData.getContacts());
 				requestResponseData.setMessages(reqRespData.getMessages());
 				requestResponseData.setOwner(reqRespData.getOwner());
@@ -80,6 +86,8 @@ public class Server implements Closeable {
 				synchronized (lock) {
 					arrClientes.add(clientHandler);
 				}
+				
+				sendTo(requestResponseData);
 				break;
 
 			case FAIL:
@@ -96,7 +104,7 @@ public class Server implements Closeable {
 				new Thread(new Runnable() {
 					@Override
 					public void run() {
-						if (DbConnection.saveMessage(requestResponseData) > 0)
+						if(DbConnection.saveMessage(requestResponseData) > 0)
 							sendTo(requestResponseData);
 					}
 				}).start();

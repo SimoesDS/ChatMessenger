@@ -231,16 +231,44 @@ public class Core implements ICommands {
 
 		return -1;
 	}
+	
+	public static void sendMessage(int idReceiver, String msg) {
+		RequestResponseData reqRespData = new RequestResponseData();
+		reqRespData.setIdOwner(getUserSession().getId());
+		reqRespData.setIdDestino(idReceiver);
+		reqRespData.setCommand(ICommands.MESSAGE);
+		reqRespData.setMsg(msg);
+		
+		sendToServer(reqRespData);
+	}
 
-	public static void replyToServer(RequestResponseData requestResponseData) {
+	public static void sendToServer(RequestResponseData requestResponseData) {
 		switch (requestResponseData.getCommand()) {
 		case AUTHENTICATE:
-			new Thread(new ClientReply(hostServer, portServer, requestResponseData))
-			.start();
+			ClientReply cr = new ClientReply(hostServer, portServer, requestResponseData);
+			ClientListener cl = new ClientListener(hostServer, portServer, cr.connect());
+			cl.setAlertaTelaListener(chatPanel.handlerListener);
+			new Thread(cr).start();
+			new Thread(cl).start();
+			break;
+		
+		case MESSAGE:
+			new Thread(new ClientReply(hostServer, portServer, requestResponseData)).start();
 			break;
 
 		default:
 			break;
 		}
+	}
+	
+	public static void login(Usuario user) {
+		// TODO: Verificar o pq que precisa desses setUserSession
+		Core.setUserSession(user);
+		Utils.setUSerSession();
+		
+		RequestResponseData reqRespData = new RequestResponseData();
+		reqRespData.setCommand(AUTHENTICATE);
+		reqRespData.setOwner(user);
+		sendToServer(reqRespData);
 	}
 }
