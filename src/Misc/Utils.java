@@ -1,8 +1,11 @@
 package Misc;
 
 import Application.Core;
+import Server.DbConnection;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,28 +35,41 @@ public class Utils {
 	}
 
 	public static String[][] getEntireDialog(int targetId) {
+		
 		Object dialog[][] = Misc.DbUtils.getUserDialog(currUser.getId(), targetId);
 
 		String returnTarget[][] = new String[dialog.length][3];
-
+		
+		
 		for (int i = 0; i < dialog.length; i++) {
-			returnTarget[i][0] = Integer.parseInt((String) dialog[i][2]) == targetId ? String.valueOf(targetId)
-					: String.valueOf(currUser.getId());
+			returnTarget[i][0] = (String) dialog[i][2];
 			returnTarget[i][1] = (String) dialog[i][1];
 			returnTarget[i][2] = (String) dialog[i][4];
 		}
-
-		String aux[];
-
-		for (Object[] dialog1 : dialog) {
-			for (int j = 0; j < dialog.length - 1; j++) {
-				Long currTime = Long.parseLong(replaceAllString(returnTarget[j][2], "[-\\.\\s:]", ""));
+		
+		/*if(messages.size() > 0)
+			messages.forEach(msg -> {
+				msg.get
+				Long currTime = Long.parseLong(replaceAllString(returnTarget[2], "[-\\.\\s:]", ""));
 				Long nextTime = Long.parseLong(replaceAllString(returnTarget[j + 1][2], "[-\\.\\s:]", ""));
 				if (currTime > nextTime) {
 					aux = returnTarget[j];
 					returnTarget[j] = returnTarget[j + 1];
 					returnTarget[j + 1] = aux;
-				}
+			
+			});*/
+		
+		
+
+		String aux[];
+
+		for (int j = 0; j < dialog.length - 1; j++) {
+			Long currTime = Long.parseLong(replaceAllString(returnTarget[j][2], "[-\\.\\s:]", ""));
+			Long nextTime = Long.parseLong(replaceAllString(returnTarget[j + 1][2], "[-\\.\\s:]", ""));
+			if (currTime > nextTime) {
+				aux = returnTarget[j];
+				returnTarget[j] = returnTarget[j + 1];
+				returnTarget[j + 1] = aux;
 			}
 		}
 
@@ -106,4 +122,26 @@ public class Utils {
 
 		return returnTarget;
 	}
+	
+	public static Object[][] getUserDialog (int userId, int targetId) {
+//		ArrayList<Message> messages = Core.getMessages();
+//
+//		if (messages.size() > 0)
+//			messages.forEach((msg) -> {
+//				if((msg.getIdSender() == userId && msg.getIdReceiver() == targetId) ||
+//						(msg.getIdSender() == targetId && msg.getIdReceiver() == userId))
+//
+//					
+//					? msg.getIdReceiver() : msg.getIdSender();
+//				if (!usersID.contains(id)) {
+//					usersID.add(id);
+//						usersArr.forEach((usr) -> {
+//							if (usr.getId() == id)
+//								messagesPrevil.add(new Object[] { usr.getNome(), msg.getMessage() });
+//						});
+//				}
+//			});    
+		
+		return DbConnection.getData("messages", "*", "(message_owner = " + userId + " AND message_receiver = " + targetId + ") OR (message_owner = " + targetId + " AND message_receiver = " + userId + ")");
+  }
 }

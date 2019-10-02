@@ -3,6 +3,8 @@ package Application;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -10,6 +12,7 @@ import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 
+import Application.BodyPanel.HandlerListener;
 import Client.ClientListener;
 import Client.ClientReply;
 import Client.ClientListener.AlertaTelaListener;
@@ -176,8 +179,14 @@ public class Core implements ICommands {
 		return allMessages;
 	}
 
-	public static void setMessages(ArrayList<Message> message) {
-		allMessages = message;
+	public static void setMessages(ArrayList<Message> messages) {
+		Collections.sort(messages, new Comparator<Message>() {
+			public int compare(Message msg1, Message msg2) {
+				return msg1.getDate().compareTo(msg2.getDate());
+			}
+		});
+		
+		allMessages = messages;
 	}
 
 	public static void setAnotherUsersStatus(boolean status[]) {

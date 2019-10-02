@@ -67,6 +67,10 @@ public class RequestResponseData implements Serializable, ICommands {
 	public ArrayList<Message> getMessages() {
 		return messages;
 	}
+	
+	public String getMsgV2() {
+		return messages.get(0).getMessage();
+	}
 
 	public void setMessages(ArrayList<Message> messages) {
 		this.messages = messages;

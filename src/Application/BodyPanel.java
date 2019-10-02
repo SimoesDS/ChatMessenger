@@ -152,15 +152,24 @@ public class BodyPanel extends JPanel {
 	public void setDialogWindow(int targetId) {
 		Core.setTargetId(targetId);
 		this.removeAll();
-		String messagesData[][] = Misc.Utils.getEntireDialog(targetId);
+		//String messagesData[][] = Misc.Utils.getEntireDialog(targetId);
+		ArrayList<Message> messages = Core.getMessages();
 
 		int lastY = 5;
+		for (Message msg : messages) {
+			boolean isMe = msg.getIdSender() != targetId;
+			String labelInfo[] = Utils.insertStringBreak(msg.getMessage());
+			this.addMessageballoon(isMe, labelInfo[0], Integer.parseInt(labelInfo[1]), lastY);
+			lastY += Integer.parseInt(labelInfo[1]) + 5;
+		}
+		
+		/*int lastY = 5;
 		for (int i = 0; i < messagesData.length; i++) {
 			boolean isMe = Integer.parseInt(messagesData[i][0]) != targetId;
 			String labelInfo[] = Utils.insertStringBreak(messagesData[i][1]);
 			this.addMessageballoon(isMe, labelInfo[0], Integer.parseInt(labelInfo[1]), lastY);
 			lastY += Integer.parseInt(labelInfo[1]) + 5;
-		}
+		}*/
 
 		if (lastY < 290) {
 			lastY = 290;
