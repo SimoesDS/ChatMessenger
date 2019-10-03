@@ -12,5 +12,6 @@ public interface ICommands {
   public static final int FAIL = 8; 		// Código de resposta do servidor, erro nao encontrado
   public static final int SUCCESS = 9; 		// Código de resposta do servidor, dados enviado com sucesso
   public static final int HANDLERAUTHENTICATE = 10; 		// Código de resposta do cliente, nao precisa autenticar
+  public static final int LOGOUT = 11; 		// Faz o logout no sistema
   
 }

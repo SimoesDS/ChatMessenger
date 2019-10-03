@@ -14,10 +14,7 @@ import Misc.Usuario;
 
 public class ClientReply implements ICommands, Runnable {
 
-	private Usuario usuario;
-
 	private IComunicacao comunicacao;
-
 	private String strHost;
 	private int intPorta;
 
@@ -28,25 +25,15 @@ public class ClientReply implements ICommands, Runnable {
 		this.intPorta = intPorta;
 		this.requestResponseData = reqRespData;
 	}
-	
-	public ClientReply(String strHost, int intPorta, RequestResponseData reqRespData, IComunicacao conn) {
-		this.strHost = strHost;
-		this.intPorta = intPorta;
-		this.requestResponseData = reqRespData;
-		this.comunicacao = conn;
-	}
 
 	@Override
 	public void run() {
 		try {
 			switch (requestResponseData.getCommand()) {
 			case AUTHENTICATE:
-				//connect();
-				requestResponseData.setCommand(AUTHENTICATE);
-				requestResponseData.setObject(usuario, null, null);
 				enviarDados(requestResponseData);
 				System.out.println(
-						new Date().getTime() + " ClientReply: Autenticar " + requestResponseData.getOwner().getNomeLogin());
+						new Date().getTime() + " ClientReply: Autenticar " + requestResponseData.getUser().getNomeLogin());
 				
 				
 				break;
@@ -54,7 +41,7 @@ public class ClientReply implements ICommands, Runnable {
 			case MESSAGE:
 				connect();
 				System.out
-						.println(new Date().getTime() + " ClientReply: envia mensagem para " + requestResponseData.getIdDestino());
+						.println(new Date().getTime() + " ClientReply: envia mensagem para " + requestResponseData.getIdReceiver());
 				enviarDados(requestResponseData);
 				break;
 

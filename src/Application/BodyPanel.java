@@ -308,12 +308,12 @@ public class BodyPanel extends JPanel {
 
 	class HandlerListener implements AlertaTelaListener, ICommands {
 		@Override
-		public void AlertaTela(RequestResponseData requestResponseData) {
-			switch (requestResponseData.getCommand()) {
+		public void AlertaTela(RequestResponseData reqRespData) {
+			switch (reqRespData.getCommand()) {
 			case AUTHENTICATED:
-				Core.setUserSession(requestResponseData.getOwner());
-				Core.setMessages(requestResponseData.getMessages());
-				Core.setUsersName(requestResponseData.getContacts());
+				Core.setUserSession(reqRespData.getUser());
+				Core.setMessages(reqRespData.getAllMessages());
+				Core.setUsersName(reqRespData.getAllContacts());
 				Utils.setUSerSession();
 				Core.updateApplication("main");
 				break;
@@ -323,8 +323,8 @@ public class BodyPanel extends JPanel {
 				break;
 
 			case MESSAGE:
-				System.out.println("BodyPanel recebeu a mensagem de: " + requestResponseData.getIdOwner());
-				Core.addChatMessage(requestResponseData.getMsg(), "in");
+				System.out.println("BodyPanel recebeu a mensagem de: " + reqRespData.getIdSender());
+				Core.addChatMessage(reqRespData.getMessage(), "in");
 				break;
 			case UNREGISTERED:
 				showErrorMsg("Login ou senha inválidos");
