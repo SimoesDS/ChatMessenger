@@ -46,48 +46,49 @@ public class Server implements Closeable {
 	public class HandlerListener implements DataListener, ICommands {
 
 		@Override
-		public synchronized void processData(ClientHandler clientHandler, RequestResponseData requestResponseData) {
+		public synchronized void processData(ClientHandler clientHandler, RequestResponseData reqRespData) {
 
-			switch (requestResponseData.getCommand()) {
+			switch (reqRespData.getCommand()) {
 			case AUTHENTICATE:
-				Usuario user = requestResponseData.getOwner();
+				Usuario user = reqRespData.getUser();
+				System.out.println(new Date().getTime() + " ClientHandler: chegou dados do " + user.getNomeLogin());
 
-				// Confere se o usuario tem ID, se ja tiver ja esta logado
-				if (user.getId() > -1) {
-					requestResponseData.setCommand(LOGGED);
+				// Confere se o ID ja esta na lista dos usuarios logado
+				if (getClientHandlerEqualId(user.getId()) != null) {
 					System.out.println(new Date().getTime() + " Server: usuario " + user.getNomeLogin() + " ja est� logado");
-					break;
-				}
 
-				RequestResponseData reqRespData = DbConnection.login(user);
-				if (reqRespData == null) {
-					requestResponseData.setCommand(UNREGISTERED);
-					System.out.println(new Date().getTime() + " Server: usuario/senha não encontrado!!");
 					try {
-						clientHandler.enviarDados(requestResponseData);
+						clientHandler.enviarDados(new RequestResponseData(LOGGED));
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
 					break;
 				}
 
-				requestResponseData.setIdDestino(reqRespData.getIdDestino());
-				requestResponseData.setContacts(reqRespData.getContacts());
-				requestResponseData.setMessages(reqRespData.getMessages());
-				requestResponseData.setOwner(reqRespData.getOwner());
-				requestResponseData.setCommand(AUTHENTICATED);
+				reqRespData = DbConnection.login(user);
+				if (reqRespData == null) {
+					System.out.println(new Date().getTime() + " Server: usuario/senha não encontrado!!");
 
-				clientHandler.setIdOwner(reqRespData.getOwner().getId());
+					try {
+						clientHandler.enviarDados(new RequestResponseData(UNREGISTERED));
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					break;
+				}
+				reqRespData.setCommand(AUTHENTICATED);
 
-				System.out
-						.println(new Date().getTime() + " Server: usuario " + reqRespData.getOwner().getNome() + " esta online!");
+				clientHandler.setId(reqRespData.getUser().getId());
 
 				// (chave/trava) http://www.guj.com.br/t/o-que-e-synchronized/139744
 				synchronized (lock) {
 					arrClientes.add(clientHandler);
 				}
-				
-				sendTo(requestResponseData);
+
+				System.out
+						.println(new Date().getTime() + " Server: usuario " + reqRespData.getUser().getNome() + " esta online!");
+
+				sendTo(reqRespData);
 				break;
 
 			case FAIL:
@@ -98,20 +99,21 @@ public class Server implements Closeable {
 				break;
 
 			case MESSAGE:
-				System.out.println(
-						"Chegou mensagem De: " + requestResponseData.getIdOwner() + " Para: " + requestResponseData.getIdDestino());
+				System.out
+						.println("Chegou mensagem De: " + reqRespData.getIdSender() + " Para: " + reqRespData.getIdReceiver());
 
+				RequestResponseData rqd = reqRespData;
 				new Thread(new Runnable() {
 					@Override
 					public void run() {
-						if(DbConnection.saveMessage(requestResponseData) > 0)
-							sendTo(requestResponseData);
+						if (DbConnection.saveMessage(rqd) > 0)
+							sendTo(rqd);
 					}
 				}).start();
 				break;
 
 			default:
-				requestResponseData.setCommand(FAIL);
+				reqRespData.setCommand(FAIL);
 				break;
 			}
 
@@ -134,7 +136,7 @@ public class Server implements Closeable {
 		}
 
 		private synchronized void sendTo(RequestResponseData requestResponseData) {
-			ClientHandler ch = getClientHandlerEqualId(requestResponseData.getIdDestino());
+			ClientHandler ch = getClientHandlerEqualId(requestResponseData.getIdReceiver());
 			if (ch != null)
 				try {
 					ch.enviarDados(requestResponseData);
@@ -147,7 +149,7 @@ public class Server implements Closeable {
 
 	private ClientHandler getClientHandlerEqualId(int id) {
 		for (ClientHandler clientHandler : arrClientes)
-			if (clientHandler.getIdOwne() == id)
+			if (clientHandler.getId() == id)
 				return clientHandler;
 		return null;
 	}

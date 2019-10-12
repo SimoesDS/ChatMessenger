@@ -15,8 +15,7 @@ import java.util.Date;
 public class ClientHandler implements Runnable, ICommands {
 
 	private IComunicacao comunicacao;
-	private int idOwner = -1;
-	private RequestResponseData requestResponseData;
+	private int id = -1;
 	private DataListener dataListener;
 
 	public ClientHandler(Socket conexaoCliente) throws IOException {
@@ -29,21 +28,8 @@ public class ClientHandler implements Runnable, ICommands {
 		try {
 			Object obj = recebeDados();
 
-			if (obj != null && obj instanceof RequestResponseData) {
-				requestResponseData = (RequestResponseData) obj;
-				System.out.println(new Date().getTime() + " ClientHandler: chegou dados do "
-						+ requestResponseData.getIdOwner());
-
-				dataListener.processData(this, requestResponseData);
-
-				if(requestResponseData.getCommand() == AUTHENTICATE)
-					System.out.println(new Date().getTime() + " ClientHandler: envia dados para o "
-						+ requestResponseData.getIdOwner());
-				else
-					System.out.println(new Date().getTime() + " ClientHandler: envia dados para o "
-							+ requestResponseData.getIdOwner());
-				//enviarDados(requestResponseData);
-			}
+			if (obj != null && obj instanceof RequestResponseData)
+				dataListener.processData(this, (RequestResponseData) obj);
 
 		} catch (IOException e) {
 			dataListener.killClientHandler(this);
@@ -70,11 +56,11 @@ public class ClientHandler implements Runnable, ICommands {
 		this.dataListener = dataListener;
 	}
 
-	public int getIdOwne() {
-		return this.idOwner;
+	public int getId() {
+		return this.id;
 	}
 
-	public void setIdOwner(int id) {
-		this.idOwner = id;
+	public void setId(int id) {
+		this.id = id;
 	}
 }

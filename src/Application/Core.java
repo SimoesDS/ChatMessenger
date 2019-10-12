@@ -242,19 +242,14 @@ public class Core implements ICommands {
 	}
 	
 	public static void sendMessage(int idReceiver, String msg) {
-		RequestResponseData reqRespData = new RequestResponseData();
-		reqRespData.setIdOwner(getUserSession().getId());
-		reqRespData.setIdDestino(idReceiver);
-		reqRespData.setCommand(ICommands.MESSAGE);
-		reqRespData.setMsg(msg);
-		
+		RequestResponseData reqRespData = new RequestResponseData(new Message(getUserSession().getId(), idReceiver, msg), MESSAGE);
 		sendToServer(reqRespData);
 	}
 
-	public static void sendToServer(RequestResponseData requestResponseData) {
-		switch (requestResponseData.getCommand()) {
+	public static void sendToServer(RequestResponseData reqRespData) {
+		switch (reqRespData.getCommand()) {
 		case AUTHENTICATE:
-			ClientReply cr = new ClientReply(hostServer, portServer, requestResponseData);
+			ClientReply cr = new ClientReply(hostServer, portServer, reqRespData);
 			ClientListener cl = new ClientListener(hostServer, portServer, cr.connect());
 			cl.setAlertaTelaListener(chatPanel.handlerListener);
 			new Thread(cr).start();
@@ -262,7 +257,7 @@ public class Core implements ICommands {
 			break;
 		
 		case MESSAGE:
-			new Thread(new ClientReply(hostServer, portServer, requestResponseData)).start();
+			new Thread(new ClientReply(hostServer, portServer, reqRespData)).start();
 			break;
 
 		default:
@@ -275,9 +270,7 @@ public class Core implements ICommands {
 		Core.setUserSession(user);
 		Utils.setUSerSession();
 		
-		RequestResponseData reqRespData = new RequestResponseData();
-		reqRespData.setCommand(AUTHENTICATE);
-		reqRespData.setOwner(user);
+		RequestResponseData reqRespData = new RequestResponseData(user, AUTHENTICATE);
 		sendToServer(reqRespData);
 	}
 }

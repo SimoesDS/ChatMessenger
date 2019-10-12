@@ -3,6 +3,8 @@ package Misc;
 import java.io.Serializable;
 import java.util.Date;
 
+import javax.xml.crypto.Data;
+
 public class Message implements Serializable{
 	private int _idSender = -1;
 	private int _idReceiver = -1;
@@ -14,6 +16,13 @@ public class Message implements Serializable{
 		this._idReceiver = idReceiver;
 		this._message = message;
 		this._date = date;
+	}
+	
+	public Message(int idSender, int idReceiver, String message) {
+		this._idSender = idSender;
+		this._idReceiver = idReceiver;
+		this._message = message;
+		this._date = new Date();
 	}
 	
 	public int getIdReceiver() {

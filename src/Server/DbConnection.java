@@ -26,9 +26,9 @@ public class DbConnection {
 		try {
 			openConnection();
 			PreparedStatement ps = conn.prepareStatement(sqlIsertMsg);
-			ps.setString(1, reqRespData.getMsg());
-			ps.setInt(2, reqRespData.getIdOwner());
-			ps.setInt(3, reqRespData.getIdDestino());
+			ps.setString(1, reqRespData.getMessage());
+			ps.setInt(2, reqRespData.getIdSender());
+			ps.setInt(3, reqRespData.getIdReceiver());
 
 			return ps.executeUpdate();
 		} catch (SQLException e) {
@@ -106,7 +106,6 @@ public class DbConnection {
 		final String sqlMessages = "SELECT * FROM messages WHERE message_owner = ? OR message_receiver = ? order by message_date desc";
 		final String sqlAllNameUsers = "SELECT user_id, user_name FROM users where user_id <> ?";
 
-		RequestResponseData reqRespData = new RequestResponseData();
 		try {
 			openConnection();
 
@@ -142,12 +141,8 @@ public class DbConnection {
 			while (rs.next())
 				contacts.add(new Usuario(rs.getInt("user_id"), rs.getString("user_name"), true));
 
-			reqRespData.setIdDestino(user.getId());
-			reqRespData.setOwner(user);
-			reqRespData.setContacts(contacts);
-			reqRespData.setMessages(messages);
 
-			return reqRespData;
+			return new RequestResponseData(user, contacts, messages);
 		} catch (SQLException e) {
 			// TODO Registrar no logger
 			e.printStackTrace();

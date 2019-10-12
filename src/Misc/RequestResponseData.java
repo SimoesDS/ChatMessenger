@@ -7,64 +7,79 @@ import java.util.ArrayList;
 
 public class RequestResponseData implements Serializable, ICommands {
 
-	private Object obj[];
+	private Object genericObject[];
 	private int command;
-	private int idSender;
-	private int idReceiver;
-	private Usuario user;
-	private ArrayList<Usuario> contacts;
-	private ArrayList<Message> messages;
-	private String msg;
 
-	public RequestResponseData() {
+	public RequestResponseData(Usuario user, int cmd) {
+		this.genericObject = new Object[] { user, null, null };
+		this.command = cmd;
 	}
-
-	public Object[] getObject() {
-		return obj;
+	
+	public RequestResponseData(Message msg, int cmd) {
+		ArrayList<Message> messages = new ArrayList<Message>();
+		messages.add(msg);
+		this.genericObject = new Object[] { null, null, messages };
+		this.command = cmd;
 	}
-
-	public void setObject(Usuario user, Object contacts[], Object message[], ArrayList<Usuario> _contacts,
-			ArrayList<Message> _messages) {
-		this.obj = new Object[] { user, contacts, message, _contacts, _messages };
+	
+	public RequestResponseData(ArrayList<Object> obj, int cmd) {
+		if(obj.size() > 0) {
+			if(obj.get(0) instanceof Usuario)
+				this.genericObject = new Object[] { null, obj, null };
+			else if(obj.get(0) instanceof Message)
+				this.genericObject = new Object[] { null, null, obj };
+		}
+		this.command = cmd;
 	}
-
-	public void setObject(Usuario user, Object contacts[], Object mensage[]) {
-		this.obj = new Object[] { user, contacts, mensage };
+	
+	public RequestResponseData(Usuario user, ArrayList<Usuario> contacts, ArrayList<Message> mensage) {
+		this.genericObject = new Object[] { user, contacts, mensage };
 	}
-
-	public int getCommand() {
-		return command;
+	
+	public RequestResponseData(int cmd) {
+		this.command = cmd;
 	}
 
 	public void setCommand(int command) {
+		switch (command) {
+		case UNREGISTERED:
+			genericObject = null;
+			break;
+		}
 		this.command = command;
 	}
-
-	public int getIdDestino() {
-		return idReceiver;
+	
+	public int getCommand() {
+		return command;
+	}
+	
+	public int getIdReceiver() {
+		if(genericObject != null && genericObject.length == 1 && genericObject[0] instanceof Message)
+			return ((Message) genericObject[0]).getIdReceiver();
+		return -1;
 	}
 
-	public void setIdDestino(int idDestino) {
-		this.idReceiver = idDestino;
+	public int getIdSender() {
+		if(genericObject != null && genericObject.length == 1 && genericObject[0] instanceof Message)
+			return ((Message) genericObject[0]).getIdSender();
+		return -1;
 	}
 
-	public int getIdOwner() {
-		return idSender;
-	}
-
-	public void setIdOwner(int idOwner) {
-		this.idSender = idOwner;
-	}
-
-	public ArrayList<Usuario> getContacts() {
+	public ArrayList<Usuario> getAllContacts() {
+		ArrayList<Usuario> contacts = new ArrayList<Usuario>();
+		for (Object object : genericObject)
+			if(object != null && object instanceof Usuario)
+				contacts.add((Usuario) object);
+		
 		return contacts;
 	}
 
-	public void setContacts(ArrayList<Usuario> contacts) {
-		this.contacts = contacts;
-	}
-
-	public ArrayList<Message> getMessages() {
+	public ArrayList<Message> getAllMessages() {
+		ArrayList<Message> messages = new ArrayList<Message>();
+		for (Object object : genericObject)
+			if(object != null && object instanceof Message)
+				messages.add((Message) object);
+		
 		return messages;
 	}
 	
@@ -72,27 +87,20 @@ public class RequestResponseData implements Serializable, ICommands {
 		return messages.get(0).getMessage();
 	}
 
-	public void setMessages(ArrayList<Message> messages) {
-		this.messages = messages;
+	public Usuario getUser() {
+		if(genericObject != null && genericObject[0] instanceof Usuario)
+			return (Usuario) genericObject[0];
+		return null;
 	}
 
+	public String getMessage() {
+		if(genericObject != null && genericObject.length == 1 && genericObject[0] instanceof Message)
+			return ((Message) genericObject[0]).getMessage();
+		
+		return "";
+	}
+	
 	public void clearObject() {
-		this.obj = null;
-	}
-
-	public Usuario getOwner() {
-		return user;
-	}
-
-	public void setOwner(Usuario owner) {
-		this.user = owner;
-	}
-
-	public String getMsg() {
-		return msg;
-	}
-
-	public void setMsg(String msg) {
-		this.msg = msg;
+		this.genericObject = null;
 	}
 }

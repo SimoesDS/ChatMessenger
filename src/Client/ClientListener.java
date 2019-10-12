@@ -19,7 +19,6 @@ import Misc.Usuario;
 public class ClientListener implements Runnable, ICommands {
 
 	private IComunicacao comunicacao;
-	private RequestResponseData requestResponseData;
 	private AlertaTelaListener alertaTelaListener;
 
 	private String strHost;
@@ -28,13 +27,11 @@ public class ClientListener implements Runnable, ICommands {
 	public ClientListener(String strHost, int intPorta) {
 		this.strHost = strHost;
 		this.intPorta = intPorta;
-		this.requestResponseData = new RequestResponseData();
 	}
 
 	public ClientListener(String strHost, int intPorta, IComunicacao conn) {
 		this.strHost = strHost;
 		this.intPorta = intPorta;
-		this.requestResponseData = new RequestResponseData();
 		this.comunicacao = conn;
 	}
 
@@ -49,17 +46,11 @@ public class ClientListener implements Runnable, ICommands {
 
 				if ((obj = recebeDados()) != null) {
 					if (obj instanceof RequestResponseData) {
-						requestResponseData = (RequestResponseData) obj;
+						RequestResponseData requestResponseData = (RequestResponseData) obj;
+						
 						switch (requestResponseData.getCommand()) {
 						case AUTHENTICATED:
-							if (requestResponseData != null) {
-								alertaTelaListener.AlertaTela(requestResponseData);
-								requestResponseData.clearObject();
-							} else {
-								requestResponseData = new RequestResponseData();
-								requestResponseData.setCommand(AUTHENTICATE);
-								enviarDados(requestResponseData);
-							}
+							alertaTelaListener.AlertaTela(requestResponseData);
 							break;
 
 						case UNREGISTERED:
@@ -72,9 +63,6 @@ public class ClientListener implements Runnable, ICommands {
 
 						case MESSAGE:
 							alertaTelaListener.AlertaTela(requestResponseData);
-							requestResponseData.clearObject();
-							// requestResponseData.setCommand(SUCCESS);
-							// enviarDados(requestResponseData);
 							break;
 
 						case SUCCESS:
@@ -89,8 +77,7 @@ public class ClientListener implements Runnable, ICommands {
 			}
 		} catch (Exception e) {
 			try {
-				requestResponseData.clearObject();
-				enviarDados(requestResponseData);
+				enviarDados(new RequestResponseData(LOGOUT));
 			} catch (IOException e1) {
 				// TODO: Se der erro tem que voltar para tela de login
 				e.printStackTrace();
