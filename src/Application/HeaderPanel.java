@@ -1,6 +1,7 @@
 package Application;
 
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -14,6 +15,7 @@ import Misc.Usuario;
 public class HeaderPanel extends JPanel {
   
   private Usuario user;
+  private KillClientListener killClientListener;
   
   HeaderPanel (int width, int height) {
     this.setSize(width, height);
@@ -46,13 +48,20 @@ public class HeaderPanel extends JPanel {
     newChatLabel.setBounds(0, 0, 25, 25);
     
     newChatPanel.addMouseListener(new MouseAdapter() {
-        @Override
-        public void mouseClicked(MouseEvent e) {
-          Core.updateApplication("newChat");
-          setNewChatWindow();
-        }
-      });
-    
+      @Override
+      public void mouseClicked(MouseEvent e) {
+        Core.updateApplication("newChat");
+      }
+
+      public void mouseEntered(MouseEvent e) {
+        setCursor(new Cursor(Cursor.HAND_CURSOR));
+      }
+
+      public void mouseExited(MouseEvent e) {
+        setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+      }
+    });
+
     logOutPanel.setLayout(null);
     logOutPanel.setBounds(287, 37, 25, 25);
     logOutPanel.setBackground(new Color(102, 130, 113));
@@ -64,6 +73,15 @@ public class HeaderPanel extends JPanel {
       @Override
       public void mouseClicked(MouseEvent e) {
         Core.updateApplication("login");
+				killClientListener.kill();
+      }
+      
+      public void mouseEntered(MouseEvent e) {
+        setCursor(new Cursor(Cursor.HAND_CURSOR));
+      }
+        
+      public void mouseExited(MouseEvent e) {
+        setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
       }
     });
      
@@ -101,12 +119,20 @@ public class HeaderPanel extends JPanel {
     turnBackLabel.setBounds(0, 0, 25, 25);
     
     turnBackPanel.addMouseListener(new MouseAdapter() {
-        @Override
-        public void mouseClicked(MouseEvent e) {
-          Core.updateApplication("main");
-        }
-      });
-    
+      @Override
+      public void mouseClicked(MouseEvent e) {
+        Core.updateApplication("main");
+      }
+      
+      public void mouseEntered(MouseEvent e) {
+        setCursor(new Cursor(Cursor.HAND_CURSOR));
+      }
+        
+      public void mouseExited(MouseEvent e) {
+        setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+      }
+    });
+
     logOutPanel.setLayout(null);
     logOutPanel.setBounds(287, 37, 25, 25);
     logOutPanel.setBackground(new Color(102, 130, 113));
@@ -115,12 +141,20 @@ public class HeaderPanel extends JPanel {
     logOutLabel.setBounds(0, 0, 25, 25);
     
     logOutLabel.addMouseListener(new MouseAdapter() {
-        @Override
-        public void mouseClicked(MouseEvent e) {
-          Core.updateApplication("login");
-        }
-      });
-     
+      @Override
+      public void mouseClicked(MouseEvent e) {
+        Core.updateApplication("login");
+      }
+      
+      public void mouseEntered(MouseEvent e) {
+        setCursor(new Cursor(Cursor.HAND_CURSOR));
+      }
+        
+      public void mouseExited(MouseEvent e) {
+        setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+      }
+    });
+
     logoPanel.add(logoLabel);
     turnBackPanel.add(turnBackLabel);
     logOutPanel.add(logOutLabel);
@@ -155,12 +189,20 @@ public class HeaderPanel extends JPanel {
     turnBackLabel.setBounds(0, 0, 25, 25);
     
     turnBackPanel.addMouseListener(new MouseAdapter() {
-        @Override
-        public void mouseClicked(MouseEvent e) {
-          Core.updateApplication("main");
-        }
-      });
-    
+      @Override
+      public void mouseClicked(MouseEvent e) {
+        Core.updateApplication("main");
+      }
+      
+      public void mouseEntered(MouseEvent e) {
+        setCursor(new Cursor(Cursor.HAND_CURSOR));
+      }
+        
+      public void mouseExited(MouseEvent e) {
+        setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+      }
+    });
+
     logOutPanel.setLayout(null);
     logOutPanel.setBounds(287, 37, 25, 25);
     logOutPanel.setBackground(new Color(102, 130, 113));
@@ -169,12 +211,20 @@ public class HeaderPanel extends JPanel {
     logOutLabel.setBounds(0, 0, 25, 25);
     
     logOutLabel.addMouseListener(new MouseAdapter() {
-        @Override
-        public void mouseClicked(MouseEvent e) {
-          Core.updateApplication("login");
-        }
-      });
-     
+      @Override
+      public void mouseClicked(MouseEvent e) {
+        Core.updateApplication("login");
+      }
+      
+      public void mouseEntered(MouseEvent e) {
+        setCursor(new Cursor(Cursor.HAND_CURSOR));
+      }
+        
+      public void mouseExited(MouseEvent e) {
+        setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+      }
+    });
+
     namePanel.add(nameLabel);
     turnBackPanel.add(turnBackLabel);
     logOutPanel.add(logOutLabel);
@@ -209,5 +259,13 @@ public class HeaderPanel extends JPanel {
     logoPanel.add(logoLabel);
     logoPanel.add(sloganLabel);
     this.add(logoPanel);
-  }  
+  }
+
+  public interface KillClientListener {
+    void kill();
+  }
+
+  public void setKillClientListener(KillClientListener killClientListener) {
+    this.killClientListener = killClientListener;
+  }
 }

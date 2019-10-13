@@ -53,19 +53,8 @@ public class Server implements Closeable {
 				Usuario user = reqRespData.getUser();
 				System.out.println(new Date().getTime() + " ClientHandler: chegou dados do " + user.getNomeLogin());
 
-				// Confere se o ID ja esta na lista dos usuarios logado
-				if (getClientHandlerEqualId(user.getId()) != null) {
-					System.out.println(new Date().getTime() + " Server: usuario " + user.getNomeLogin() + " ja est� logado");
-
-					try {
-						clientHandler.enviarDados(new RequestResponseData(LOGGED));
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-					break;
-				}
-
 				reqRespData = DbConnection.login(user);
+
 				if (reqRespData == null) {
 					System.out.println(new Date().getTime() + " Server: usuario/senha não encontrado!!");
 
@@ -76,25 +65,48 @@ public class Server implements Closeable {
 					}
 					break;
 				}
-				reqRespData.setCommand(AUTHENTICATED);
 
-				clientHandler.setId(reqRespData.getUser().getId());
+				// Confere se o ID ja esta na lista dos usuarios logado
+				if (getClientHandlerEqualId(reqRespData.getUser().getId()) != null) {
+					System.out.println(new Date().getTime() + " Server: usuario " + user.getNomeLogin() + " ja est� logado");
 
-				// (chave/trava) http://www.guj.com.br/t/o-que-e-synchronized/139744
-				synchronized (lock) {
-					arrClientes.add(clientHandler);
+					try {
+						clientHandler.enviarDados(new RequestResponseData(LOGGED));
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					break;
 				}
 
-				System.out
-						.println(new Date().getTime() + " Server: usuario " + reqRespData.getUser().getNome() + " esta online!");
+				reqRespData.setCommand(AUTHENTICATED);
+				clientHandler.setId(reqRespData.getUser().getId());
+				setStatusOfUsers(reqRespData);
+				
+				try {
+					clientHandler.enviarDados(reqRespData);
+					// (chave/trava) http://www.guj.com.br/t/o-que-e-synchronized/139744
+					synchronized (lock) {
+						arrClientes.add(clientHandler);
+					}
 
-				sendTo(reqRespData);
+					System.out
+							.println(new Date().getTime() + " Server: usuario " + reqRespData.getUser().getNome() + " esta online!");
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				notifyAll(clientHandler);
 				break;
 
 			case FAIL:
 				break;
+			case STATUS:
+				// String i[][] = getContactsUser(clientHandler.getUsuario(), "all");
+				// System.out.println(Arrays.deepToString(i));
+				// requestResponseData.setObjectMatrix(i);
+				break;
 
-			case LIST_CONTACTS:
+			case CONTACTS:
 
 				break;
 
@@ -121,18 +133,26 @@ public class Server implements Closeable {
 
 		@Override
 		public void killClientHandler(ClientHandler clientHandler) {
-			arrClientes.remove(clientHandler);
+			synchronized (lock) {
+				ClientHandler ch = getClientHandlerEqualId(clientHandler.getId());
+				if (ch != null)
+					for (int i = 0; i < arrClientes.size(); i++)
+						if (arrClientes.get(i).getId() == clientHandler.getId())
+							arrClientes.remove(i);
+			}
 		}
 
-		private void notifyAll(ClientHandler user) {
-			for (int i = 0; i < arrClientes.size(); i++) {
-				if (!arrClientes.get(i).equals(user)) {
-
-				}
-
-				// mandar o usuario logado pra todos da lista exceto o proprio usuario
+		private void notifyAll(ClientHandler clientHandler) {
+			synchronized (lock) {
+				for (ClientHandler ch : arrClientes)
+					if (ch.getId() != clientHandler.getId()) {
+						try {
+							ch.enviarDados(new RequestResponseData(STATUS));
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
 			}
-
 		}
 
 		private synchronized void sendTo(RequestResponseData requestResponseData) {
@@ -152,5 +172,11 @@ public class Server implements Closeable {
 			if (clientHandler.getId() == id)
 				return clientHandler;
 		return null;
+	}
+
+	private void setStatusOfUsers(RequestResponseData reqRespData) {
+		for (Usuario user : reqRespData.getAllContacts())
+			if (getClientHandlerEqualId(user.getId()) != null)
+				user.setOnline();
 	}
 }

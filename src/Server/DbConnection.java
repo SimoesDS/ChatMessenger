@@ -22,11 +22,11 @@ public class DbConnection {
 
 	public static int saveMessage(RequestResponseData reqRespData) {
 		final String sqlIsertMsg = "INSERT INTO messages (message_type, message_owner, message_receiver) VALUES (?, ?, ?)";
-		;
+
 		try {
 			openConnection();
 			PreparedStatement ps = conn.prepareStatement(sqlIsertMsg);
-			ps.setString(1, reqRespData.getMessage());
+			ps.setString(1, reqRespData.getMsg());
 			ps.setInt(2, reqRespData.getIdSender());
 			ps.setInt(3, reqRespData.getIdReceiver());
 
@@ -103,7 +103,7 @@ public class DbConnection {
 
 	public static RequestResponseData login(Usuario userTemp) {
 		final String sqlUser = "SELECT * FROM users WHERE user_name = ? and user_password = ?";
-		final String sqlMessages = "SELECT * FROM messages WHERE message_owner = ? OR message_receiver = ? order by message_date desc";
+		final String sqlMessages = "SELECT * FROM messages WHERE message_owner = ? OR message_receiver = ? order by message_date";
 		final String sqlAllNameUsers = "SELECT user_id, user_name FROM users where user_id <> ?";
 
 		try {
@@ -117,8 +117,7 @@ public class DbConnection {
 			if (!rs.next())
 				return null;
 
-			Usuario user = new Usuario(rs.getInt("user_id"), rs.getString("user_name"), rs.getString("user_login"), null,
-					true);
+			Usuario user = new Usuario(rs.getInt("user_id"), rs.getString("user_name"), true);
 
 			st = conn.prepareStatement(sqlMessages);
 			st.setInt(1, user.getId());
@@ -139,8 +138,7 @@ public class DbConnection {
 			ArrayList<Usuario> contacts = new ArrayList<Usuario>();
 
 			while (rs.next())
-				contacts.add(new Usuario(rs.getInt("user_id"), rs.getString("user_name"), true));
-
+				contacts.add(new Usuario(rs.getInt("user_id"), rs.getString("user_name")));
 
 			return new RequestResponseData(user, contacts, messages);
 		} catch (SQLException e) {

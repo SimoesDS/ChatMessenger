@@ -5,8 +5,6 @@ import Communication.ICommands;
 import Communication.IComunicacao;
 import Communication.SocketComunicacao;
 import Misc.RequestResponseData;
-import Misc.Usuario;
-import Application.Core;
 
 import java.io.IOException;
 import java.net.Socket;

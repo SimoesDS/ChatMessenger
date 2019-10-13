@@ -28,7 +28,7 @@ public class Core implements ICommands {
 	private static HeaderPanel headerPanel;
 	private static JFrame mainFrame;
 	private static JScrollPane scroll;
-	private static boolean users_status[] = { true, false, true, false, true, true };
+	private static boolean users_status[];
 	private static String currentWindowStyle;
 
 	private static Usuario currUser;
@@ -53,7 +53,7 @@ public class Core implements ICommands {
 		mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		headerPanel = new HeaderPanel(350, 320);
-		chatPanel = new BodyPanel(350, 2);
+		chatPanel = new BodyPanel(350);
 		scroll = new JScrollPane(chatPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
 				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
@@ -80,29 +80,11 @@ public class Core implements ICommands {
 		switch (style) {
 		case "newChat":
 			scroll.setBounds(0, 100, 345, 372);
-
-			// TODO: gambiarra temporaria
-			ArrayList<Usuario> users = getUsersName();
-			String names[] = new String[users.size()];
-			for (int i = 0; i < users.size(); i++) {
-				names[i] = users.get(i).getNome();
-			}
-
-			chatPanel.setNewChatWindow(names, users_status);
+			chatPanel.setNewChatWindow();
 			break;
 		case "main":
-			ArrayList<Object[]> data = Utils.getPreviewData();
-			String prUsers[] = new String[data.size()];
-			String prMessages[] = new String[data.size()];
-
-			for (int j = 0; j < data.size(); j++) {
-				prUsers[j] = (String) ((Object[]) data.get(j))[0];
-				prMessages[j] = (String) ((Object[]) data.get(j))[1];
-			}
-
 			scroll.setBounds(0, 100, 345, 372);
-			chatPanel.setConversations(prUsers.length);
-			chatPanel.setMainWindow(prUsers, prMessages, users_status);
+			chatPanel.setMainWindow(Utils.getPreviewData());
 			headerPanel.setMainWindow();
 			headerPanel.setSize(350, 100);
 			setTopScrollPosition();
@@ -141,12 +123,7 @@ public class Core implements ICommands {
 			mainFrame.repaint();
 			setBottomScrollPosition();
 		} else {
-			try {
-				Thread.sleep(1000);
-				updateApplication("main");
-			} catch (InterruptedException ex) {
-				Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, ex);
-			}
+			updateApplication("main");
 		}
 	}
 
@@ -175,18 +152,16 @@ public class Core implements ICommands {
 		return allNameUsers;
 	}
 
-	public static ArrayList<Message> getMessages() {
+	public static ArrayList<Message> getAllMessages() {
 		return allMessages;
 	}
 
-	public static void setMessages(ArrayList<Message> messages) {
-		Collections.sort(messages, new Comparator<Message>() {
-			public int compare(Message msg1, Message msg2) {
-				return msg1.getDate().compareTo(msg2.getDate());
-			}
-		});
-		
+	public static void setAllMessages(ArrayList<Message> messages) {
 		allMessages = messages;
+	}
+
+	public static void addMessage(Message messages) {
+		allMessages.add(messages);
 	}
 
 	public static void setAnotherUsersStatus(boolean status[]) {
@@ -197,40 +172,12 @@ public class Core implements ICommands {
 		return users_status;
 	}
 
-	public static int getTargetId() {
-		return targetId;
-	}
-
 	public static void setTargetId(int id) {
 		targetId = id;
 	}
 
 	public static String getCurrWindowStyle() {
 		return currentWindowStyle;
-	}
-
-	public static void setCurrWindowStyle(String s) {
-		currentWindowStyle = s;
-	}
-
-	public static BodyPanel getBodyInstance() {
-		return chatPanel;
-	}
-
-	public static HeaderPanel getHeaderInstance() {
-		return headerPanel;
-	}
-
-	public static JScrollPane getScrollInstance() {
-		return scroll;
-	}
-
-	public static JFrame getMainFrameInstance() {
-		return mainFrame;
-	}
-
-	public static boolean[] getUsersStatusInfo() {
-		return users_status;
 	}
 
 	public static int getIdUserByName(String name) {
@@ -240,9 +187,19 @@ public class Core implements ICommands {
 
 		return -1;
 	}
-	
+
+	public static ArrayList<Message> getMessagesInvolvesTarget(int idReceiver) {
+		ArrayList<Message> involvedMsg = new ArrayList<Message>();
+		for (Message message : getAllMessages())
+			if (message.getIdReceiver() == idReceiver || message.getIdSender() == idReceiver)
+				involvedMsg.add(message);
+
+		return involvedMsg;
+	}
+
 	public static void sendMessage(int idReceiver, String msg) {
-		RequestResponseData reqRespData = new RequestResponseData(new Message(getUserSession().getId(), idReceiver, msg), MESSAGE);
+		RequestResponseData reqRespData = new RequestResponseData(new Message(getUserSession().getId(), idReceiver, msg),
+				MESSAGE);
 		sendToServer(reqRespData);
 	}
 
@@ -255,21 +212,22 @@ public class Core implements ICommands {
 			new Thread(cr).start();
 			new Thread(cl).start();
 			break;
-		
+
 		case MESSAGE:
 			new Thread(new ClientReply(hostServer, portServer, reqRespData)).start();
+			addMessage(reqRespData.getMessage());
 			break;
 
 		default:
 			break;
 		}
 	}
-	
+
 	public static void login(Usuario user) {
 		// TODO: Verificar o pq que precisa desses setUserSession
 		Core.setUserSession(user);
 		Utils.setUSerSession();
-		
+
 		RequestResponseData reqRespData = new RequestResponseData(user, AUTHENTICATE);
 		sendToServer(reqRespData);
 	}

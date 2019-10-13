@@ -12,54 +12,46 @@ import java.util.regex.Pattern;
 public class Utils {
 
 	static Usuario currUser;
-	
+
 	public static ArrayList<Object[]> getPreviewData() {
 		ArrayList<Usuario> usersArr = Core.getUsersName();
-		ArrayList<Message> messages = Core.getMessages();
+		ArrayList<Message> messages = Core.getAllMessages();
 		ArrayList<Object[]> messagesPrevil = new ArrayList<>();
-		ArrayList<Integer> usersID = new ArrayList<>();
 
-		if (messages.size() > 0)
-			messages.forEach((msg) -> {
-				int id = msg.getIdSender() == currUser.getId() ? msg.getIdReceiver() : msg.getIdSender();
-				if (!usersID.contains(id)) {
-					usersID.add(id);
-						usersArr.forEach((usr) -> {
-							if (usr.getId() == id)
-								messagesPrevil.add(new Object[] { usr.getNome(), msg.getMessage() });
-						});
+		if (messages.size() > 0) {
+			for (int i = 0; i < usersArr.size(); i++) {
+				int qtdMsgs = Core.getMessagesInvolvesTarget(usersArr.get(i).getId()).size();
+				if (qtdMsgs > 0) {
+					Message lastMessage = Core.getMessagesInvolvesTarget(usersArr.get(i).getId()).get(qtdMsgs - 1);
+					messagesPrevil.add(new Object[] { usersArr.get(i).getNome(), lastMessage.getMessage(), usersArr.get(i).isOnline() });
 				}
-			});
+			}
+		}
 
 		return messagesPrevil;
 	}
 
 	public static String[][] getEntireDialog(int targetId) {
-		
+
 		Object dialog[][] = Misc.DbUtils.getUserDialog(currUser.getId(), targetId);
 
 		String returnTarget[][] = new String[dialog.length][3];
-		
-		
+
 		for (int i = 0; i < dialog.length; i++) {
 			returnTarget[i][0] = (String) dialog[i][2];
 			returnTarget[i][1] = (String) dialog[i][1];
 			returnTarget[i][2] = (String) dialog[i][4];
 		}
-		
-		/*if(messages.size() > 0)
-			messages.forEach(msg -> {
-				msg.get
-				Long currTime = Long.parseLong(replaceAllString(returnTarget[2], "[-\\.\\s:]", ""));
-				Long nextTime = Long.parseLong(replaceAllString(returnTarget[j + 1][2], "[-\\.\\s:]", ""));
-				if (currTime > nextTime) {
-					aux = returnTarget[j];
-					returnTarget[j] = returnTarget[j + 1];
-					returnTarget[j + 1] = aux;
-			
-			});*/
-		
-		
+
+		/*
+		 * if(messages.size() > 0) messages.forEach(msg -> { msg.get Long currTime =
+		 * Long.parseLong(replaceAllString(returnTarget[2], "[-\\.\\s:]", "")); Long
+		 * nextTime = Long.parseLong(replaceAllString(returnTarget[j + 1][2],
+		 * "[-\\.\\s:]", "")); if (currTime > nextTime) { aux = returnTarget[j];
+		 * returnTarget[j] = returnTarget[j + 1]; returnTarget[j + 1] = aux;
+		 * 
+		 * });
+		 */
 
 		String aux[];
 
@@ -122,8 +114,8 @@ public class Utils {
 
 		return returnTarget;
 	}
-	
-	public static Object[][] getUserDialog (int userId, int targetId) {
+
+	public static Object[][] getUserDialog(int userId, int targetId) {
 //		ArrayList<Message> messages = Core.getMessages();
 //
 //		if (messages.size() > 0)
@@ -141,7 +133,8 @@ public class Utils {
 //						});
 //				}
 //			});    
-		
-		return DbConnection.getData("messages", "*", "(message_owner = " + userId + " AND message_receiver = " + targetId + ") OR (message_owner = " + targetId + " AND message_receiver = " + userId + ")");
-  }
+
+		return DbConnection.getData("messages", "*", "(message_owner = " + userId + " AND message_receiver = " + targetId
+				+ ") OR (message_owner = " + targetId + " AND message_receiver = " + userId + ")");
+	}
 }

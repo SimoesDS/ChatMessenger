@@ -10,16 +10,18 @@ import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import Application.HeaderPanel.KillClientListener;
 import Communication.ICommands;
 import Communication.IComunicacao;
 import Communication.SocketComunicacao;
 import Misc.RequestResponseData;
 import Misc.Usuario;
 
-public class ClientListener implements Runnable, ICommands {
+public class ClientListener extends Thread implements ICommands {
 
 	private IComunicacao comunicacao;
 	private AlertaTelaListener alertaTelaListener;
+  private boolean killListener = false;
 
 	private String strHost;
 	private int intPorta;
@@ -33,6 +35,7 @@ public class ClientListener implements Runnable, ICommands {
 		this.strHost = strHost;
 		this.intPorta = intPorta;
 		this.comunicacao = conn;
+		//Core.getHeaderInstance().setKillClientListener(new KillClient());
 	}
 
 	@Override
@@ -42,10 +45,10 @@ public class ClientListener implements Runnable, ICommands {
 		// logoff
 		// TODO: Quando perde a conexao com o serv fica dando erro infinito
 		try {
-			while (true) {
+      while (!killListener) {
 
-				if ((obj = recebeDados()) != null) {
-					if (obj instanceof RequestResponseData) {
+				if ((obj = recebeDados()) != null 
+					&& obj instanceof RequestResponseData) {
 						RequestResponseData requestResponseData = (RequestResponseData) obj;
 						
 						switch (requestResponseData.getCommand()) {
@@ -72,12 +75,13 @@ public class ClientListener implements Runnable, ICommands {
 
 						default:
 						}
-					}
+					
 				}
 			}
 		} catch (Exception e) {
 			try {
 				enviarDados(new RequestResponseData(LOGOUT));
+				e.printStackTrace();
 			} catch (IOException e1) {
 				// TODO: Se der erro tem que voltar para tela de login
 				e.printStackTrace();
@@ -110,5 +114,20 @@ public class ClientListener implements Runnable, ICommands {
 	public void setAlertaTelaListener(AlertaTelaListener alertaTelaListener) {
 		this.alertaTelaListener = alertaTelaListener;
 	}
+
+	class KillClient implements KillClientListener {
+
+    @Override
+    public void kill() {
+      try {
+        System.out.println("Setou para LOG_OUT");
+        enviarDados(new RequestResponseData(LOGOUT));
+      } catch (IOException e) {
+        e.printStackTrace();
+      } finally {
+      	killListener = true;
+			}
+    }
+  }
 
 }
