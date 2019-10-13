@@ -28,7 +28,6 @@ public class Core implements ICommands {
 	private static HeaderPanel headerPanel;
 	private static JFrame mainFrame;
 	private static JScrollPane scroll;
-	private static boolean users_status[];
 	private static String currentWindowStyle;
 
 	private static Usuario currUser;
@@ -135,7 +134,6 @@ public class Core implements ICommands {
 		scroll.getVerticalScrollBar().setValue(scroll.getVerticalScrollBar().getMinimum());
 	}
 
-	// METHODS RELATED TO USER_DATA
 	public static void setUserSession(Usuario user) {
 		currUser = user;
 	}
@@ -151,6 +149,16 @@ public class Core implements ICommands {
 	public static ArrayList<Usuario> getUsersName() {
 		return allNameUsers;
 	}
+	
+	public static void setStatusOfUser(Usuario user) {
+		for (Usuario usr : getUsersName()) {
+			if (user.getId() == usr.getId())
+				if(user.isOnline())
+					usr.setOnline();
+				else
+					usr.setOffline();
+		}
+	}
 
 	public static ArrayList<Message> getAllMessages() {
 		return allMessages;
@@ -162,14 +170,6 @@ public class Core implements ICommands {
 
 	public static void addMessage(Message messages) {
 		allMessages.add(messages);
-	}
-
-	public static void setAnotherUsersStatus(boolean status[]) {
-		users_status = status;
-	}
-
-	public static boolean[] getAnotherUsersStatus(boolean status[]) {
-		return users_status;
 	}
 
 	public static void setTargetId(int id) {

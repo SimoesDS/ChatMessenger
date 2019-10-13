@@ -50,32 +50,7 @@ public class ClientListener extends Thread implements ICommands {
 				if ((obj = recebeDados()) != null 
 					&& obj instanceof RequestResponseData) {
 						RequestResponseData requestResponseData = (RequestResponseData) obj;
-						
-						switch (requestResponseData.getCommand()) {
-						case AUTHENTICATED:
-							alertaTelaListener.AlertaTela(requestResponseData);
-							break;
-
-						case UNREGISTERED:
-							alertaTelaListener.AlertaTela(requestResponseData);
-							break;
-
-						case LOGGED:
-							alertaTelaListener.AlertaTela(requestResponseData);
-							break;
-
-						case MESSAGE:
-							alertaTelaListener.AlertaTela(requestResponseData);
-							break;
-
-						case SUCCESS:
-							break;
-						case FAIL:
-							break;
-
-						default:
-						}
-					
+						alertaTelaListener.AlertaTela(requestResponseData);
 				}
 			}
 		} catch (Exception e) {

@@ -95,7 +95,7 @@ public class Server implements Closeable {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				notifyAll(clientHandler);
+				notifyAll(reqRespData.getUser());
 				break;
 
 			case FAIL:
@@ -142,12 +142,12 @@ public class Server implements Closeable {
 			}
 		}
 
-		private void notifyAll(ClientHandler clientHandler) {
+		private void notifyAll(Usuario user) {
 			synchronized (lock) {
 				for (ClientHandler ch : arrClientes)
-					if (ch.getId() != clientHandler.getId()) {
+					if (ch.getId() != user.getId()) {
 						try {
-							ch.enviarDados(new RequestResponseData(STATUS));
+							ch.enviarDados(new RequestResponseData(user, STATUS));
 						} catch (IOException e) {
 							e.printStackTrace();
 						}

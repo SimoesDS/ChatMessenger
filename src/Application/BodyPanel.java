@@ -349,7 +349,6 @@ public class BodyPanel extends JPanel {
 				Core.setAllMessages(reqRespData.getAllMessages());
 				Core.setUsersName(reqRespData.getAllContacts());
 				Utils.setUSerSession();
-				Core.setAnotherUsersStatus(new boolean[] { true });
 				Core.updateApplication("main");
 				System.out.println(" Seja bem vindo " + Core.getUserSession().getNome());
 				break;
@@ -368,8 +367,7 @@ public class BodyPanel extends JPanel {
 				break;
 
 			case STATUS:
-				// statusObj = convertToBoolean(requestResponseData.getObjectMatrix());
-				Core.setAnotherUsersStatus(new boolean[] { true });
+				Core.setStatusOfUser(reqRespData.getUser());
 				if (Core.getCurrWindowStyle() == "main")
 					Core.updateApplication("main");
 				if (Core.getCurrWindowStyle() == "newChat")
