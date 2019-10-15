@@ -10,6 +10,7 @@ import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import Application.Core;
 import Application.HeaderPanel.KillClientListener;
 import Communication.ICommands;
 import Communication.IComunicacao;
@@ -23,19 +24,9 @@ public class ClientListener extends Thread implements ICommands {
 	private AlertaTelaListener alertaTelaListener;
   private boolean killListener = false;
 
-	private String strHost;
-	private int intPorta;
-
-	public ClientListener(String strHost, int intPorta) {
-		this.strHost = strHost;
-		this.intPorta = intPorta;
-	}
-
-	public ClientListener(String strHost, int intPorta, IComunicacao conn) {
-		this.strHost = strHost;
-		this.intPorta = intPorta;
+	public ClientListener(IComunicacao conn) {
 		this.comunicacao = conn;
-		//Core.getHeaderInstance().setKillClientListener(new KillClient());
+		Core.setKillClientListener(new KillClient());
 	}
 
 	@Override
@@ -46,7 +37,6 @@ public class ClientListener extends Thread implements ICommands {
 		// TODO: Quando perde a conexao com o serv fica dando erro infinito
 		try {
       while (!killListener) {
-
 				if ((obj = recebeDados()) != null 
 					&& obj instanceof RequestResponseData) {
 						RequestResponseData requestResponseData = (RequestResponseData) obj;
@@ -54,13 +44,8 @@ public class ClientListener extends Thread implements ICommands {
 				}
 			}
 		} catch (Exception e) {
-			try {
-				enviarDados(new RequestResponseData(LOGOUT));
-				e.printStackTrace();
-			} catch (IOException e1) {
-				// TODO: Se der erro tem que voltar para tela de login
-				e.printStackTrace();
-			}
+			// TODO: Se der erro tem que voltar para tela de login
+			e.printStackTrace();
 		}
 	}
 
@@ -70,15 +55,6 @@ public class ClientListener extends Thread implements ICommands {
 
 	private void enviarDados(Object obj) throws IOException {
 		comunicacao.enviarObject(obj);
-	}
-
-	public void conectar() {
-		try {
-			comunicacao = new SocketComunicacao(new Socket(strHost, intPorta));
-		} catch (IOException e) {
-			System.out.println("Client: Erro ao conectar no servidor");
-			e.printStackTrace();
-		}
 	}
 
 	public interface AlertaTelaListener {
@@ -92,17 +68,12 @@ public class ClientListener extends Thread implements ICommands {
 
 	class KillClient implements KillClientListener {
 
-    @Override
-    public void kill() {
-      try {
-        System.out.println("Setou para LOG_OUT");
-        enviarDados(new RequestResponseData(LOGOUT));
-      } catch (IOException e) {
-        e.printStackTrace();
-      } finally {
-      	killListener = true;
-			}
-    }
-  }
-
+		@Override
+		public void kill(Usuario user) {
+			System.out.println("Setou para LOG_OUT");
+			killListener = true;
+			comunicacao = null;
+			Thread.currentThread().interrupt();
+		}
+	}
 }

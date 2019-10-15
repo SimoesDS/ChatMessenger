@@ -10,12 +10,12 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import Misc.RequestResponseData;
 import Misc.Usuario;
 
 public class HeaderPanel extends JPanel {
-  
-  private Usuario user;
-  private KillClientListener killClientListener;
+	
+  public KillClientListener killClientListener;
   
   HeaderPanel (int width, int height) {
     this.setSize(width, height);
@@ -73,7 +73,7 @@ public class HeaderPanel extends JPanel {
       @Override
       public void mouseClicked(MouseEvent e) {
         Core.updateApplication("login");
-				killClientListener.kill();
+        Core.logout();
       }
       
       public void mouseEntered(MouseEvent e) {
@@ -262,7 +262,7 @@ public class HeaderPanel extends JPanel {
   }
 
   public interface KillClientListener {
-    void kill();
+    void kill(Usuario user);
   }
 
   public void setKillClientListener(KillClientListener killClientListener) {

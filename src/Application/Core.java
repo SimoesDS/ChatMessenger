@@ -13,6 +13,7 @@ import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 
 import Application.BodyPanel.HandlerListener;
+import Application.HeaderPanel.KillClientListener;
 import Client.ClientListener;
 import Client.ClientReply;
 import Client.ClientListener.AlertaTelaListener;
@@ -207,7 +208,7 @@ public class Core implements ICommands {
 		switch (reqRespData.getCommand()) {
 		case AUTHENTICATE:
 			ClientReply cr = new ClientReply(hostServer, portServer, reqRespData);
-			ClientListener cl = new ClientListener(hostServer, portServer, cr.connect());
+			ClientListener cl = new ClientListener(cr.connect());
 			cl.setAlertaTelaListener(chatPanel.handlerListener);
 			new Thread(cr).start();
 			new Thread(cl).start();
@@ -217,7 +218,10 @@ public class Core implements ICommands {
 			new Thread(new ClientReply(hostServer, portServer, reqRespData)).start();
 			addMessage(reqRespData.getMessage());
 			break;
-
+		case LOGOUT:
+			//headerPanel.killClientListener.kill(Core.getUserSession());
+			new Thread(new ClientReply(hostServer, portServer, reqRespData)).start();
+			break;
 		default:
 			break;
 		}
@@ -230,5 +234,13 @@ public class Core implements ICommands {
 
 		RequestResponseData reqRespData = new RequestResponseData(user, AUTHENTICATE);
 		sendToServer(reqRespData);
+	}
+	
+	public static void logout() {
+		sendToServer(new RequestResponseData(getUserSession(), LOGOUT));
+	}
+	
+	public static void setKillClientListener(KillClientListener killListener) {
+		headerPanel.setKillClientListener(killListener);
 	}
 }

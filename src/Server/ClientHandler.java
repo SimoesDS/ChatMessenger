@@ -30,7 +30,7 @@ public class ClientHandler implements Runnable, ICommands {
 				dataListener.processData(this, (RequestResponseData) obj);
 
 		} catch (IOException e) {
-			dataListener.killClientHandler(this);
+			dataListener.killClientHandler(this.getId());
 		} finally {
 			Thread.currentThread().interrupt();
 		}
@@ -47,7 +47,7 @@ public class ClientHandler implements Runnable, ICommands {
 	public interface DataListener {
 		void processData(ClientHandler clientHandler, RequestResponseData requestResponseData);
 
-		void killClientHandler(ClientHandler clientHandler);
+		void killClientHandler(int idUser);
 	}
 
 	public void setDataListener(DataListener dataListener) {

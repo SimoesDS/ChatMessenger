@@ -98,16 +98,8 @@ public class Server implements Closeable {
 				notifyAll(reqRespData.getUser());
 				break;
 
-			case FAIL:
-				break;
-			case STATUS:
-				// String i[][] = getContactsUser(clientHandler.getUsuario(), "all");
-				// System.out.println(Arrays.deepToString(i));
-				// requestResponseData.setObjectMatrix(i);
-				break;
-
-			case CONTACTS:
-
+			case LOGOUT:
+				killClientHandler(reqRespData.getUser().getId());
 				break;
 
 			case MESSAGE:
@@ -132,12 +124,12 @@ public class Server implements Closeable {
 		}
 
 		@Override
-		public void killClientHandler(ClientHandler clientHandler) {
+		public void killClientHandler(int idUser) {
 			synchronized (lock) {
-				ClientHandler ch = getClientHandlerEqualId(clientHandler.getId());
+				ClientHandler ch = getClientHandlerEqualId(idUser);
 				if (ch != null)
 					for (int i = 0; i < arrClientes.size(); i++)
-						if (arrClientes.get(i).getId() == clientHandler.getId())
+						if (arrClientes.get(i).getId() == idUser)
 							arrClientes.remove(i);
 			}
 		}
