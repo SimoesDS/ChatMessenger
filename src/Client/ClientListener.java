@@ -10,29 +10,23 @@ import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import Application.Core;
+import Application.HeaderPanel.KillClientListener;
 import Communication.ICommands;
 import Communication.IComunicacao;
 import Communication.SocketComunicacao;
 import Misc.RequestResponseData;
 import Misc.Usuario;
 
-public class ClientListener implements Runnable, ICommands {
+public class ClientListener extends Thread implements ICommands {
 
 	private IComunicacao comunicacao;
 	private AlertaTelaListener alertaTelaListener;
+  private boolean killListener = false;
 
-	private String strHost;
-	private int intPorta;
-
-	public ClientListener(String strHost, int intPorta) {
-		this.strHost = strHost;
-		this.intPorta = intPorta;
-	}
-
-	public ClientListener(String strHost, int intPorta, IComunicacao conn) {
-		this.strHost = strHost;
-		this.intPorta = intPorta;
+	public ClientListener(IComunicacao conn) {
 		this.comunicacao = conn;
+		Core.setKillClientListener(new KillClient());
 	}
 
 	@Override
@@ -42,46 +36,16 @@ public class ClientListener implements Runnable, ICommands {
 		// logoff
 		// TODO: Quando perde a conexao com o serv fica dando erro infinito
 		try {
-			while (true) {
-
-				if ((obj = recebeDados()) != null) {
-					if (obj instanceof RequestResponseData) {
+      while (!killListener) {
+				if ((obj = recebeDados()) != null 
+					&& obj instanceof RequestResponseData) {
 						RequestResponseData requestResponseData = (RequestResponseData) obj;
-						
-						switch (requestResponseData.getCommand()) {
-						case AUTHENTICATED:
-							alertaTelaListener.AlertaTela(requestResponseData);
-							break;
-
-						case UNREGISTERED:
-							alertaTelaListener.AlertaTela(requestResponseData);
-							break;
-
-						case LOGGED:
-							alertaTelaListener.AlertaTela(requestResponseData);
-							break;
-
-						case MESSAGE:
-							alertaTelaListener.AlertaTela(requestResponseData);
-							break;
-
-						case SUCCESS:
-							break;
-						case FAIL:
-							break;
-
-						default:
-						}
-					}
+						alertaTelaListener.AlertaTela(requestResponseData);
 				}
 			}
 		} catch (Exception e) {
-			try {
-				enviarDados(new RequestResponseData(LOGOUT));
-			} catch (IOException e1) {
-				// TODO: Se der erro tem que voltar para tela de login
-				e.printStackTrace();
-			}
+			// TODO: Se der erro tem que voltar para tela de login
+			e.printStackTrace();
 		}
 	}
 
@@ -93,15 +57,6 @@ public class ClientListener implements Runnable, ICommands {
 		comunicacao.enviarObject(obj);
 	}
 
-	public void conectar() {
-		try {
-			comunicacao = new SocketComunicacao(new Socket(strHost, intPorta));
-		} catch (IOException e) {
-			System.out.println("Client: Erro ao conectar no servidor");
-			e.printStackTrace();
-		}
-	}
-
 	public interface AlertaTelaListener {
 
 		void AlertaTela(RequestResponseData requestResponseData);
@@ -111,4 +66,14 @@ public class ClientListener implements Runnable, ICommands {
 		this.alertaTelaListener = alertaTelaListener;
 	}
 
+	class KillClient implements KillClientListener {
+
+		@Override
+		public void kill(Usuario user) {
+			System.out.println("Setou para LOG_OUT");
+			killListener = true;
+			comunicacao = null;
+			Thread.currentThread().interrupt();
+		}
+	}
 }

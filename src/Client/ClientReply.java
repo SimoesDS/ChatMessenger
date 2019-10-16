@@ -34,14 +34,16 @@ public class ClientReply implements ICommands, Runnable {
 				enviarDados(requestResponseData);
 				System.out.println(
 						new Date().getTime() + " ClientReply: Autenticar " + requestResponseData.getUser().getNomeLogin());
-				
-				
 				break;
 
 			case MESSAGE:
 				connect();
 				System.out
 						.println(new Date().getTime() + " ClientReply: envia mensagem para " + requestResponseData.getIdReceiver());
+				enviarDados(requestResponseData);
+				break;
+			case LOGOUT:
+				connect();
 				enviarDados(requestResponseData);
 				break;
 

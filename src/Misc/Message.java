@@ -8,7 +8,7 @@ import javax.xml.crypto.Data;
 public class Message implements Serializable{
 	private int _idSender = -1;
 	private int _idReceiver = -1;
-	private String _message;
+	private String _message = "";
 	private Date _date;
 	
 	public Message(int idSender, int idReceiver, String message, Date date) {
