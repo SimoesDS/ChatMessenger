@@ -3,25 +3,19 @@ package Application;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 
-import Application.BodyPanel.HandlerListener;
 import Application.HeaderPanel.KillClientListener;
 import Client.ClientListener;
 import Client.ClientReply;
-import Client.ClientListener.AlertaTelaListener;
 import Communication.ICommands;
 import Misc.Message;
 import Misc.RequestResponseData;
 import Misc.Usuario;
-import Misc.Utils;
 
 public class Core implements ICommands {
 
@@ -34,6 +28,7 @@ public class Core implements ICommands {
 	private static Usuario currUser;
 	private static ArrayList<Usuario> allNameUsers;
 	private static ArrayList<Message> allMessages;
+	private static ArrayList<Integer> listNewMSGFromUsers = new ArrayList<Integer>();
 	private static int targetId;
 
 	public final static String hostServer = "localhost";
@@ -84,7 +79,7 @@ public class Core implements ICommands {
 			break;
 		case "main":
 			scroll.setBounds(0, 100, 345, 372);
-			chatPanel.setMainWindow(Utils.getPreviewData());
+			chatPanel.setMainWindow(Core.getPreviewData());
 			headerPanel.setMainWindow();
 			headerPanel.setSize(350, 100);
 			setTopScrollPosition();
@@ -106,7 +101,7 @@ public class Core implements ICommands {
 
 	public static void addChatMessage(String message, String way) {
 		if (currentWindowStyle == "dialog") {
-			String[] balloonData = Utils.insertStringBreak(message);
+			String[] balloonData = Core.insertStringBreak(message);
 			int BalloonHeights = chatPanel.getBallonsTotalHeight();
 			int balloonCurrHeight = Integer.parseInt(balloonData[1]);
 
@@ -176,6 +171,10 @@ public class Core implements ICommands {
 	public static void setTargetId(int id) {
 		targetId = id;
 	}
+	
+	public static int getTargetId() {
+		return targetId;
+	}
 
 	public static String getCurrWindowStyle() {
 		return currentWindowStyle;
@@ -217,6 +216,8 @@ public class Core implements ICommands {
 		case MESSAGE:
 			new Thread(new ClientReply(hostServer, portServer, reqRespData)).start();
 			addMessage(reqRespData.getMessage());
+			if(reqRespData.getMessage().getIdSender() != targetId)
+				addNewMSGFromUser(reqRespData.getMessage().getIdSender());
 			break;
 		case LOGOUT:
 			//headerPanel.killClientListener.kill(Core.getUserSession());
@@ -230,7 +231,6 @@ public class Core implements ICommands {
 	public static void login(Usuario user) {
 		// TODO: Verificar o pq que precisa desses setUserSession
 		Core.setUserSession(user);
-		Utils.setUSerSession();
 
 		RequestResponseData reqRespData = new RequestResponseData(user, AUTHENTICATE);
 		sendToServer(reqRespData);
@@ -243,4 +243,64 @@ public class Core implements ICommands {
 	public static void setKillClientListener(KillClientListener killListener) {
 		headerPanel.setKillClientListener(killListener);
 	}
+	
+	public static ArrayList<Integer> getListNewMSGFromUsers() {
+		return listNewMSGFromUsers;
+	}
+	
+	public static void addNewMSGFromUser(int idUser) {
+		if(!listNewMSGFromUsers.contains(idUser))
+			listNewMSGFromUsers.add(idUser);
+	}
+	
+	public static void removeNewMSGFromUser(int idUser) {
+		for (int i = 0; i < listNewMSGFromUsers.size(); i++) {
+			if(listNewMSGFromUsers.get(i) == idUser) {
+				listNewMSGFromUsers.remove(i);
+				break;
+			}
+		}
+	}
+
+	public static ArrayList<Object[]> getPreviewData() {
+		ArrayList<Usuario> usersArr = getUsersName();
+		ArrayList<Message> messages = getAllMessages();
+		ArrayList<Object[]> messagesPrevil = new ArrayList<>();
+
+		if (messages.size() > 0) {
+			for (int i = 0; i < usersArr.size(); i++) {
+				int qtdMsgs = getMessagesInvolvesTarget(usersArr.get(i).getId()).size();
+				if (qtdMsgs > 0) {
+					Message lastMessage = getMessagesInvolvesTarget(usersArr.get(i).getId()).get(qtdMsgs - 1);
+					messagesPrevil.add(new Object[] { usersArr.get(i).getNome(), lastMessage.getMessage(), usersArr.get(i).isOnline() });
+				}
+			}
+		}
+
+		return messagesPrevil;
+	}
+	
+	public static String[] insertStringBreak(String string) {
+		String aux = "";
+		String returnTarget[] = new String[2];
+		int heightPlus = 22;
+
+		Pattern p = Pattern.compile(".{20,30}(\\s)");
+		Matcher m = p.matcher(string);
+		while (m.find()) {
+			aux += m.group() + "<br />";
+			heightPlus += 13;
+		}
+
+		aux += "<html>" + string.replace(aux.replaceAll("<br />", ""), "") + "</html>";
+		if (string.length() > 20 && m.groupCount() == 1)
+			heightPlus += 9;
+
+		returnTarget[0] = aux;
+		returnTarget[1] = String.valueOf(heightPlus);
+
+		return returnTarget;
+	}
+	
+	
 }

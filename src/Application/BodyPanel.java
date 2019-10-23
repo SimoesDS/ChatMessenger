@@ -4,8 +4,11 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Ellipse2D;
 import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
@@ -23,7 +26,6 @@ import Communication.ICommands;
 import Misc.Message;
 import Misc.RequestResponseData;
 import Misc.Usuario;
-import Misc.Utils;
 
 public class BodyPanel extends JPanel {
 
@@ -50,13 +52,15 @@ public class BodyPanel extends JPanel {
 			this.add(noConversation);
 		}
 		int lastY = 0;
+		
 		for (int i = 0; i < messagesPrevil.size(); i++) {
-			int index = i;
+			int index = i;		
 
 			String name = (String) messagesPrevil.get(index)[0];
 			String lastMessage = (String) messagesPrevil.get(index)[1];
 			boolean status = (boolean) messagesPrevil.get(index)[2];
-
+			int targetId = Core.getIdUserByName(name);
+			
 			JPanel currPanel = new JPanel();
 			currPanel.setLayout(null); // retirar
 			currPanel.setBounds(0, lastY, 350, 75);
@@ -74,18 +78,30 @@ public class BodyPanel extends JPanel {
 			JLabel lastMessageLabel = new JLabel(lastMessage);
 			lastMessageLabel.setBounds(52, 39, 300, 20);
 			lastMessageLabel.setFont(new Font("Times New Roman", Font.PLAIN, 12));
-
+			
+			JPanel circleNotify = new JPanel() {
+				@Override
+				public void paintComponent(Graphics g) {
+					Graphics2D g2 = (Graphics2D) g;
+					g.setColor(new Color(102, 130, 113));
+					g2.fill(new Ellipse2D.Double(0, 0, 10, 10));
+				}
+			};
+			
+			circleNotify.setBounds(300, 31, 10, 10);
+			boolean notifyNewMessage = Core.getListNewMSGFromUsers().contains(targetId);
+			circleNotify.setVisible(notifyNewMessage);
 			currPanel.add(statusPanel);
 			currPanel.add(nameLabel);
 			currPanel.add(lastMessageLabel);
+			currPanel.add(circleNotify);
 
 			currPanel.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseClicked(MouseEvent e) {
-					int targetId = Core.getIdUserByName(name);
-
-					Usuario user = new Usuario(targetId, name); // TODO: USER JA DEVE ESTAR ERRADO
-					Core.buildDialogWindow(user); // TODO: Objeto com as conversas ja estara no cliente
+					Core.removeNewMSGFromUser(targetId);					
+					Usuario user = new Usuario(targetId, name);
+					Core.buildDialogWindow(user);
 					Core.setBottomScrollPosition();
 				}
 
@@ -116,48 +132,51 @@ public class BodyPanel extends JPanel {
 		int lastY = 0;
 		for (int i = 0; i < users.size(); i++) {
 			int index = i;
+			
+			String name = users.get(index).getNome();
+			int targetId = users.get(index).getId();
+			boolean status = (boolean) users.get(index).isOnline();
+			
+			JPanel currPanel = new JPanel();
+			currPanel.setLayout(null); // retirar
+			currPanel.setBounds(0, lastY, 350, 75);
+			currPanel.setBackground(new Color(224, 224, 224));
 
-			if (users.get(i) != null) { // TODO: Tirar essa verificação
-				JPanel currPanel = new JPanel();
-				currPanel.setLayout(null); // retirar
-				currPanel.setBounds(0, lastY, 350, 75);
-				currPanel.setBackground(new Color(224, 224, 224));
+			Color statusColor = status ? new Color(0, 255, 0) : new Color(255, 255, 255);
+			JPanel statusPanel = new JPanel();
+			statusPanel.setBounds(30, 25, 10, 10);
+			statusPanel.setBackground(statusColor);
 
-				Color statusColor = users.get(i).isOnline() ? new Color(0, 255, 0) : new Color(255, 255, 255);
-				JPanel statusPanel = new JPanel();
-				statusPanel.setBounds(30, 25, 10, 10);
-				statusPanel.setBackground(statusColor);
+			JLabel nameLabel = new JLabel(name);
+			nameLabel.setBounds(50, 20, 100, 20);
+			nameLabel.setFont(new Font("Times New Roman", Font.BOLD, 16));
 
-				JLabel nameLabel = new JLabel(users.get(i).getNome());
-				nameLabel.setBounds(50, 20, 100, 20);
-				nameLabel.setFont(new Font("Times New Roman", Font.BOLD, 16));
+			currPanel.add(statusPanel);
+			currPanel.add(nameLabel);
 
-				currPanel.add(statusPanel);
-				currPanel.add(nameLabel);
+			currPanel.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseClicked(MouseEvent e) {
+					Core.buildDialogWindow(users.get(index));
+					Core.setTargetId(targetId);
+				}
 
-				currPanel.addMouseListener(new MouseAdapter() {
-					@Override
-					public void mouseClicked(MouseEvent e) {
-						Core.buildDialogWindow(users.get(index));
-					}
+				@Override
+				public void mouseEntered(MouseEvent e) {
+					currPanel.setBackground(new Color(232, 232, 232));
+					setCursor(new Cursor(Cursor.HAND_CURSOR));
+				}
 
-					@Override
-					public void mouseEntered(MouseEvent e) {
-						currPanel.setBackground(new Color(232, 232, 232));
-						setCursor(new Cursor(Cursor.HAND_CURSOR));
-					}
+				@Override
+				public void mouseExited(MouseEvent e) {
+					currPanel.setBackground(new Color(224, 224, 224));
+					setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+				}
+			});
 
-					@Override
-					public void mouseExited(MouseEvent e) {
-						currPanel.setBackground(new Color(224, 224, 224));
-						setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-					}
-				});
+			lastY += 76;
 
-				lastY += 76;
-
-				this.add(currPanel);
-			}
+			this.add(currPanel);
 		}
 	}
 
@@ -170,18 +189,10 @@ public class BodyPanel extends JPanel {
 		int lastY = 5;
 		for (Message msg : messages) {
 			boolean isMe = msg.getIdSender() != targetId;
-			String labelInfo[] = Utils.insertStringBreak(msg.getMessage());
+			String labelInfo[] = Core.insertStringBreak(msg.getMessage());
 			this.addMessageballoon(isMe, labelInfo[0], Integer.parseInt(labelInfo[1]), lastY);
 			lastY += Integer.parseInt(labelInfo[1]) + 5;
 		}
-
-		/*
-		 * int lastY = 5; for (int i = 0; i < messagesData.length; i++) { boolean isMe =
-		 * Integer.parseInt(messagesData[i][0]) != targetId; String labelInfo[] =
-		 * Utils.insertStringBreak(messagesData[i][1]); this.addMessageballoon(isMe,
-		 * labelInfo[0], Integer.parseInt(labelInfo[1]), lastY); lastY +=
-		 * Integer.parseInt(labelInfo[1]) + 5; }
-		 */
 
 		if (lastY < 290) {
 			lastY = 290;
@@ -337,6 +348,9 @@ public class BodyPanel extends JPanel {
 			this.invalidLabel.setText("");
 		}
 	}
+	
+	public void showNotifyMSG() {
+	}
 
 	class HandlerListener implements AlertaTelaListener, ICommands {
 		private boolean statusObj[];
@@ -348,7 +362,6 @@ public class BodyPanel extends JPanel {
 				Core.setUserSession(reqRespData.getUser());
 				Core.setAllMessages(reqRespData.getAllMessages());
 				Core.setUsersName(reqRespData.getAllContacts());
-				Utils.setUSerSession();
 				Core.updateApplication("main");
 				System.out.println(" Seja bem vindo " + Core.getUserSession().getNome());
 				break;
@@ -360,7 +373,10 @@ public class BodyPanel extends JPanel {
 			case MESSAGE:
 				System.out.println("BodyPanel recebeu a mensagem de: " + reqRespData.getIdSender());
 				Core.addMessage(reqRespData.getMessage());
-				Core.addChatMessage(reqRespData.getMsg(), "in");				
+				Core.addNewMSGFromUser(reqRespData.getMessage().getIdSender());
+				
+				if(Core.getTargetId() == reqRespData.getMessage().getIdSender()) 
+					Core.addChatMessage(reqRespData.getMsg(), "in");
 				break;
 			case UNREGISTERED:
 				showErrorMsg("Login ou senha inválidos");
@@ -368,14 +384,15 @@ public class BodyPanel extends JPanel {
 
 			case STATUS:
 				Core.setStatusOfUser(reqRespData.getUser());
-				if (Core.getCurrWindowStyle() == "main")
-					Core.updateApplication("main");
-				if (Core.getCurrWindowStyle() == "newChat")
-					Core.updateApplication("newChat");
 				break;
 			default:
 				break;
 			}
+			
+			if (Core.getCurrWindowStyle() == "main")
+				Core.updateApplication("main");
+			if (Core.getCurrWindowStyle() == "newChat")
+				Core.updateApplication("newChat");
 
 		}
 	}

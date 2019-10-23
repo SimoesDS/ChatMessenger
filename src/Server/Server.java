@@ -100,6 +100,8 @@ public class Server implements Closeable {
 
 			case LOGOUT:
 				killClientHandler(reqRespData.getUser().getId());
+				reqRespData.getUser().setOffline();
+				notifyAll(reqRespData.getUser());
 				break;
 
 			case MESSAGE:
