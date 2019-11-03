@@ -107,10 +107,10 @@ public class Core implements ICommands, IApplication {
 		if (currentWindowStyle == WINDOW_CHAT) {
 			String[] balloonData = Core.insertStringBreak(message);
 			int BalloonHeights = chatPanel.getBallonsTotalHeight();
-			int balloonCurrHeight = Integer.parseInt(balloonData[1]);
+			int balloonCurrHeight = Integer.parseInt(balloonData[1]);			
 
 			boolean isMe = (way == "out") ? true : false;
-
+			
 			chatPanel.removeInputArea();
 			chatPanel.addMessageballoon(isMe, balloonData[0], balloonCurrHeight, BalloonHeights + 5);
 			chatPanel.createInputArea(BalloonHeights < 290 - balloonCurrHeight ? 290 : BalloonHeights + balloonCurrHeight + 5,
@@ -296,26 +296,32 @@ public class Core implements ICommands, IApplication {
 	}
 	
 	public static String[] insertStringBreak(String string) {
-		String aux = "";
+		String aux = "<html>";
+		
 		String returnTarget[] = new String[2];
 		int heightPlus = 22;
+		int countMatchs = 0;
 
-		Pattern p = Pattern.compile(".{20,30}(\\s)");
+		Pattern p = Pattern.compile("(?:((?>.{1,20}(?:(?<=[^\\S\\r\\n])[^\\S\\r\\n]?|(?=\\r?\\n)|$|[^\\S\\r\\n]))|.{1,20})(?:\\r?\\n)?|(?:\\r?\\n|$))");
 		Matcher m = p.matcher(string);
+		
+		while (m.find())
+			countMatchs++;
+			
+		m.reset();
+		
 		while (m.find()) {
-			aux += m.group() + "<br />";
-			heightPlus += 13;
+			aux += m.group() + "";
+			if(--countMatchs > 1) {
+				aux += "<br/>";
+				heightPlus += 14;
+			}			
 		}
 
-		aux += "<html>" + string.replace(aux.replaceAll("<br />", ""), "") + "</html>";
-		if (string.length() > 20 && m.groupCount() == 1)
-			heightPlus += 9;
-
-		returnTarget[0] = aux;
+		returnTarget[0] = aux + "</html>";
 		returnTarget[1] = String.valueOf(heightPlus);
 
 		return returnTarget;
-	}
-	
+	}	
 	
 }

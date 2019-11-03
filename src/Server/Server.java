@@ -119,7 +119,7 @@ public class Server implements Closeable {
 				new Thread(new Runnable() {
 					@Override
 					public void run() {
-						if (dbConn.saveMessage(rqd) > 0)
+						//if (dbConn.saveMessage(rqd) > 0)
 							sendTo(rqd);
 					}
 				}).start();

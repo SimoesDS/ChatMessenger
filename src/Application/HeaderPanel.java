@@ -117,13 +117,14 @@ public class HeaderPanel extends JPanel implements IApplication{
 
     JPanel namePanel = new JPanel();
     namePanel.setLayout(null);
-    namePanel.setBounds(30, 15, 100, 50);
+    namePanel.setBounds(30, 35, 215, 28);
     namePanel.setBackground(new Color(102, 130, 113));
 
     JLabel nameLabel = new JLabel(name);
-    nameLabel.setBounds(0, 15, 100, 40);
+    nameLabel.setBounds(0, 0, 215, 28);
     nameLabel.setFont(new Font("Times New Roman", Font.ROMAN_BASELINE, 26));
     nameLabel.setForeground(new Color(232, 232, 232));
+    
 
     turnBackPanel.setLayout(null);
     turnBackPanel.setBounds(252, 37, 25, 25);

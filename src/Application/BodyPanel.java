@@ -74,11 +74,11 @@ public class BodyPanel extends JPanel {
 			statusPanel.setBackground(statusColor);
 
 			JLabel nameLabel = new JLabel(name);
-			nameLabel.setBounds(50, 20, 100, 20);
+			nameLabel.setBounds(50, 20, 240, 20);
 			nameLabel.setFont(new Font("Times New Roman", Font.BOLD, 16));
-
+			
 			JLabel lastMessageLabel = new JLabel(lastMessage.getMessage());
-			lastMessageLabel.setBounds(52, 39, 300, 20);
+			lastMessageLabel.setBounds(52, 39, 240, 20);
 			lastMessageLabel.setFont(new Font("Times New Roman", Font.PLAIN, 12));
 
 			JPanel circleNotify = new JPanel() {
@@ -142,16 +142,16 @@ public class BodyPanel extends JPanel {
 
 			JPanel currPanel = new JPanel();
 			currPanel.setLayout(null); // retirar
-			currPanel.setBounds(0, lastY, 350, 75);
+			currPanel.setBounds(0, lastY, 350, 49);
 			currPanel.setBackground(new Color(224, 224, 224));
 
 			Color statusColor = status ? new Color(0, 255, 0) : new Color(255, 255, 255);
 			JPanel statusPanel = new JPanel();
-			statusPanel.setBounds(30, 25, 10, 10);
+			statusPanel.setBounds(30, 20, 10, 10);
 			statusPanel.setBackground(statusColor);
 
 			JLabel nameLabel = new JLabel(name);
-			nameLabel.setBounds(50, 20, 100, 20);
+			nameLabel.setBounds(50, 15, 240, 20);
 			nameLabel.setFont(new Font("Times New Roman", Font.BOLD, 16));
 
 			currPanel.add(statusPanel);
@@ -177,7 +177,7 @@ public class BodyPanel extends JPanel {
 				}
 			});
 
-			lastY += 76;
+			lastY += 50;
 
 			this.add(currPanel);
 		}
