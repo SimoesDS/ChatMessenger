@@ -6,23 +6,20 @@
 package Client;
 
 import java.io.IOException;
-import java.net.Socket;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.net.SocketException;
 
 import Application.Core;
 import Application.HeaderPanel.KillClientListener;
 import Communication.ICommands;
 import Communication.IComunicacao;
-import Communication.SocketComunicacao;
-import Misc.RequestResponseData;
+import Communication.RequestResponseData;
 import Misc.Usuario;
 
 public class ClientListener extends Thread implements ICommands {
 
 	private IComunicacao comunicacao;
 	private AlertaTelaListener alertaTelaListener;
-  private boolean killListener = false;
+	private boolean killListener = false;
 
 	public ClientListener(IComunicacao conn) {
 		this.comunicacao = conn;
@@ -36,25 +33,26 @@ public class ClientListener extends Thread implements ICommands {
 		// logoff
 		// TODO: Quando perde a conexao com o serv fica dando erro infinito
 		try {
-      while (!killListener) {
-				if ((obj = recebeDados()) != null 
-					&& obj instanceof RequestResponseData) {
-						RequestResponseData requestResponseData = (RequestResponseData) obj;
-						alertaTelaListener.AlertaTela(requestResponseData);
+			while (!killListener) {
+				if ((obj = recebeDados()) != null && obj instanceof RequestResponseData) {
+					RequestResponseData requestResponseData = (RequestResponseData) obj;
+					alertaTelaListener.AlertaTela(requestResponseData);
 				}
 			}
 		} catch (Exception e) {
 			// TODO: Se der erro tem que voltar para tela de login
-			e.printStackTrace();
+			if (e instanceof SocketException) {
+				SocketException se = (SocketException) e;
+				if (!se.getMessage().equals("Socket closed")) {
+					e.printStackTrace();
+				}
+			} else
+				e.printStackTrace();
 		}
 	}
 
 	private Object recebeDados() throws IOException {
 		return comunicacao.recebeObject();
-	}
-
-	private void enviarDados(Object obj) throws IOException {
-		comunicacao.enviarObject(obj);
 	}
 
 	public interface AlertaTelaListener {
@@ -66,12 +64,13 @@ public class ClientListener extends Thread implements ICommands {
 		this.alertaTelaListener = alertaTelaListener;
 	}
 
-	class KillClient implements KillClientListener {
+	private class KillClient implements KillClientListener {
 
 		@Override
 		public void kill(Usuario user) {
-			System.out.println("Setou para LOG_OUT");
+			System.out.println("Fez logout");
 			killListener = true;
+			comunicacao.closeConnection();
 			comunicacao = null;
 			Thread.currentThread().interrupt();
 		}

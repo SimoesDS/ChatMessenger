@@ -3,6 +3,9 @@ package Application;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -13,17 +16,17 @@ import Application.HeaderPanel.KillClientListener;
 import Client.ClientListener;
 import Client.ClientReply;
 import Communication.ICommands;
+import Communication.RequestResponseData;
 import Misc.Message;
-import Misc.RequestResponseData;
 import Misc.Usuario;
 
-public class Core implements ICommands {
+public class Core implements ICommands, IApplication {
 
 	private static BodyPanel chatPanel;
 	private static HeaderPanel headerPanel;
 	private static JFrame mainFrame;
 	private static JScrollPane scroll;
-	private static String currentWindowStyle;
+	private static int currentWindowStyle;
 
 	private static Usuario currUser;
 	private static ArrayList<Usuario> allNameUsers;
@@ -31,8 +34,8 @@ public class Core implements ICommands {
 	private static ArrayList<Integer> listNewMSGFromUsers = new ArrayList<Integer>();
 	private static int targetId;
 
-	public final static String hostServer = "localhost";
-	public final static int portServer = 5056;
+	private final static String hostServer = "localhost";
+	private final static int portServer = 5056;
 
 	public static void initializeApp() {
 		mainFrame = new JFrame("SChat");
@@ -58,11 +61,11 @@ public class Core implements ICommands {
 		mainFrame.add(headerPanel);
 		mainFrame.add(scroll);
 
-		Core.updateApplication("login");
+		Core.updateApplication(WINDOW_LOGIN);
 	}
 
 	public static void buildDialogWindow(Usuario userTarget) {
-		currentWindowStyle = "dialog";
+		currentWindowStyle = WINDOW_CHAT;
 		scroll.setBounds(0, 100, 345, 372);
 		chatPanel.setDialogWindow(userTarget.getId());
 		headerPanel.setDialogWindow(userTarget.getNome());
@@ -70,21 +73,22 @@ public class Core implements ICommands {
 		mainFrame.revalidate();
 	}
 
-	public static void updateApplication(String style) {
+	public static void updateApplication(int style) {
 		currentWindowStyle = style;
 		switch (style) {
-		case "newChat":
+		case WINDOW_NEWCHAT:
 			scroll.setBounds(0, 100, 345, 372);
 			chatPanel.setNewChatWindow();
+			headerPanel.setNewChatWindow();
 			break;
-		case "main":
+		case WINDOW_MAIN:
 			scroll.setBounds(0, 100, 345, 372);
 			chatPanel.setMainWindow(Core.getPreviewData());
 			headerPanel.setMainWindow();
 			headerPanel.setSize(350, 100);
 			setTopScrollPosition();
 			break;
-		case "login":
+		case WINDOW_LOGIN:
 			scroll.setBounds(0, 320, 345, 152);
 			chatPanel.setPreferredSize(new Dimension(345, 149));
 			chatPanel.setLoginWindow();
@@ -92,7 +96,7 @@ public class Core implements ICommands {
 			headerPanel.setSize(350, 320);
 			break;
 		default:
-			System.out.println("WINDOW STYLE NOT FOUND");
+			break;
 		}
 
 		mainFrame.repaint();
@@ -100,7 +104,7 @@ public class Core implements ICommands {
 	}
 
 	public static void addChatMessage(String message, String way) {
-		if (currentWindowStyle == "dialog") {
+		if (currentWindowStyle == WINDOW_CHAT) {
 			String[] balloonData = Core.insertStringBreak(message);
 			int BalloonHeights = chatPanel.getBallonsTotalHeight();
 			int balloonCurrHeight = Integer.parseInt(balloonData[1]);
@@ -118,7 +122,7 @@ public class Core implements ICommands {
 			mainFrame.repaint();
 			setBottomScrollPosition();
 		} else {
-			updateApplication("main");
+			updateApplication(WINDOW_MAIN);
 		}
 	}
 
@@ -176,7 +180,7 @@ public class Core implements ICommands {
 		return targetId;
 	}
 
-	public static String getCurrWindowStyle() {
+	public static int getCurrWindowStyle() {
 		return currentWindowStyle;
 	}
 
@@ -220,7 +224,7 @@ public class Core implements ICommands {
 				addNewMSGFromUser(reqRespData.getMessage().getIdSender());
 			break;
 		case LOGOUT:
-			//headerPanel.killClientListener.kill(Core.getUserSession());
+			headerPanel.killClientListener.kill(Core.getUserSession());
 			new Thread(new ClientReply(hostServer, portServer, reqRespData)).start();
 			break;
 		default:
@@ -272,11 +276,22 @@ public class Core implements ICommands {
 				int qtdMsgs = getMessagesInvolvesTarget(usersArr.get(i).getId()).size();
 				if (qtdMsgs > 0) {
 					Message lastMessage = getMessagesInvolvesTarget(usersArr.get(i).getId()).get(qtdMsgs - 1);
-					messagesPrevil.add(new Object[] { usersArr.get(i).getNome(), lastMessage.getMessage(), usersArr.get(i).isOnline() });
+					messagesPrevil.add(new Object[] { usersArr.get(i).getNome(), lastMessage, usersArr.get(i).isOnline() });
 				}
 			}
 		}
-
+		
+		Collections.sort(messagesPrevil, new Comparator<Object[]>() {
+			@Override
+			public int compare(Object[] o1, Object[] o2) {
+				Date d1 = ((Message) o1[1]).getDate();
+				Date d2 = ((Message) o2[1]).getDate();
+				
+				return (d1.getTime() > d2.getTime() ? -1 : (d1.getTime() == d2.getTime() ? 0 : 1));
+			}
+			
+		});
+		
 		return messagesPrevil;
 	}
 	

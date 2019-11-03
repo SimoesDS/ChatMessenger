@@ -1,9 +1,5 @@
 package Server;
 
-import Communication.ICommands;
-import Misc.RequestResponseData;
-import Misc.*;
-
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -11,6 +7,9 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Date;
 
+import Communication.ICommands;
+import Communication.RequestResponseData;
+import Misc.Usuario;
 import Server.ClientHandler.DataListener;
 
 public class Server implements Closeable {
@@ -19,6 +18,7 @@ public class Server implements Closeable {
 	private ArrayList<ClientHandler> arrClientes;
 	private HandlerListener handlerListener;
 	private Object lock = new Object();
+	private DBConnection dbConn;
 
 	final int maxConexoes = 30;
 
@@ -26,8 +26,13 @@ public class Server implements Closeable {
 		serverSocket = new ServerSocket(porta, maxConexoes);
 		arrClientes = new ArrayList<>();
 		handlerListener = new HandlerListener();
+		dbConn = new DBConnection(hostBD, userBD, passwordBD);
 	}
 
+	public boolean testConnDB() {
+		return dbConn.testConn();
+	}
+	
 	public void aguardaConexoes() throws IOException {
 		Socket socket;
 		while ((socket = serverSocket.accept()) != null) {
@@ -43,7 +48,7 @@ public class Server implements Closeable {
 		serverSocket.close();
 	}
 
-	public class HandlerListener implements DataListener, ICommands {
+	private class HandlerListener implements DataListener, ICommands {
 
 		@Override
 		public synchronized void processData(ClientHandler clientHandler, RequestResponseData reqRespData) {
@@ -51,12 +56,12 @@ public class Server implements Closeable {
 			switch (reqRespData.getCommand()) {
 			case AUTHENTICATE:
 				Usuario user = reqRespData.getUser();
-				System.out.println(new Date().getTime() + " ClientHandler: chegou dados do " + user.getNomeLogin());
+				System.out.println(new Date().getTime() + " Autenticar " + user.getNomeLogin());
 
-				reqRespData = DbConnection.login(user);
+				reqRespData = dbConn.login(user);
 
 				if (reqRespData == null) {
-					System.out.println(new Date().getTime() + " Server: usuario/senha não encontrado!!");
+					System.out.println(new Date().getTime() + " Usuario/senha não encontrado!!");
 
 					try {
 						clientHandler.enviarDados(new RequestResponseData(UNREGISTERED));
@@ -68,7 +73,7 @@ public class Server implements Closeable {
 
 				// Confere se o ID ja esta na lista dos usuarios logado
 				if (getClientHandlerEqualId(reqRespData.getUser().getId()) != null) {
-					System.out.println(new Date().getTime() + " Server: usuario " + user.getNomeLogin() + " ja est� logado");
+					System.out.println(new Date().getTime() + " Usuário " + user.getNomeLogin() + " ja est� logado");
 
 					try {
 						clientHandler.enviarDados(new RequestResponseData(LOGGED));
@@ -90,7 +95,7 @@ public class Server implements Closeable {
 					}
 
 					System.out
-							.println(new Date().getTime() + " Server: usuario " + reqRespData.getUser().getNome() + " esta online!");
+							.println(new Date().getTime() + " Usuario " + reqRespData.getUser().getNome() + " esta online!");
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -101,25 +106,26 @@ public class Server implements Closeable {
 			case LOGOUT:
 				killClientHandler(reqRespData.getUser().getId());
 				reqRespData.getUser().setOffline();
+				System.out
+				.println(new Date().getTime() + " Usuario " + reqRespData.getUser().getNome() + " esta offline!");
 				notifyAll(reqRespData.getUser());
 				break;
 
 			case MESSAGE:
 				System.out
-						.println("Chegou mensagem De: " + reqRespData.getIdSender() + " Para: " + reqRespData.getIdReceiver());
+						.println(new Date().getTime() + " Chegou mensagem de: " + reqRespData.getIdSender() + " para: " + reqRespData.getIdReceiver());
 
 				RequestResponseData rqd = reqRespData;
 				new Thread(new Runnable() {
 					@Override
 					public void run() {
-						if (DbConnection.saveMessage(rqd) > 0)
+						if (dbConn.saveMessage(rqd) > 0)
 							sendTo(rqd);
 					}
 				}).start();
 				break;
 
 			default:
-				reqRespData.setCommand(FAIL);
 				break;
 			}
 
@@ -154,7 +160,6 @@ public class Server implements Closeable {
 			if (ch != null)
 				try {
 					ch.enviarDados(requestResponseData);
-					requestResponseData.setCommand(SUCCESS);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}

@@ -1,5 +1,4 @@
 package Client;
-//https://www.programiz.com/java-programming/examples/convert-outputstream-string
 
 import java.io.IOException;
 import java.net.Socket;
@@ -8,9 +7,8 @@ import java.util.Date;
 
 import Communication.ICommands;
 import Communication.IComunicacao;
+import Communication.RequestResponseData;
 import Communication.SocketComunicacao;
-import Misc.RequestResponseData;
-import Misc.Usuario;
 
 public class ClientReply implements ICommands, Runnable {
 
@@ -33,13 +31,13 @@ public class ClientReply implements ICommands, Runnable {
 			case AUTHENTICATE:
 				enviarDados(requestResponseData);
 				System.out.println(
-						new Date().getTime() + " ClientReply: Autenticar " + requestResponseData.getUser().getNomeLogin());
+						new Date().getTime() + " Autenticar " + requestResponseData.getUser().getNomeLogin());
 				break;
 
 			case MESSAGE:
 				connect();
 				System.out
-						.println(new Date().getTime() + " ClientReply: envia mensagem para " + requestResponseData.getIdReceiver());
+						.println(new Date().getTime() + " Enviar mensagem para " + requestResponseData.getIdReceiver());
 				enviarDados(requestResponseData);
 				break;
 			case LOGOUT:
@@ -69,7 +67,7 @@ public class ClientReply implements ICommands, Runnable {
 		try {
 			comunicacao = new SocketComunicacao(new Socket(strHost, intPorta));
 		} catch (IOException e) {
-			System.out.println("Client: Erro ao conectar no servidor");
+			System.out.println("Erro ao conectar no servidor!!");
 			e.printStackTrace();
 		}
 		return comunicacao;

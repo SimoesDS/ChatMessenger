@@ -1,14 +1,13 @@
 package Server;
 
-import Communication.ICommands;
-
-import Communication.IComunicacao;
-import Communication.SocketComunicacao;
-import Misc.RequestResponseData;
-
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Date;
+
+import Communication.ICommands;
+import Communication.IComunicacao;
+import Communication.RequestResponseData;
+import Communication.SocketComunicacao;
 
 public class ClientHandler implements Runnable, ICommands {
 
@@ -22,12 +21,14 @@ public class ClientHandler implements Runnable, ICommands {
 
 	@Override
 	public void run() {
-		System.out.println(new Date().getTime() + " ClientHandler: ouviu alguma coisa");
 		try {
 			Object obj = recebeDados();
 
-			if (obj != null && obj instanceof RequestResponseData)
-				dataListener.processData(this, (RequestResponseData) obj);
+			if (obj != null && obj instanceof RequestResponseData) {
+				RequestResponseData rrd = (RequestResponseData) obj;
+				System.out.println(new Date().getTime() + " Chegou dados de " + rrd.getIdSender());
+				dataListener.processData(this, rrd);
+			}
 
 		} catch (IOException e) {
 			dataListener.killClientHandler(this.getId());
@@ -40,7 +41,7 @@ public class ClientHandler implements Runnable, ICommands {
 		comunicacao.enviarObject(obj);
 	}
 
-	public Object recebeDados() throws IOException {
+	private Object recebeDados() throws IOException {
 		return comunicacao.recebeObject();
 	}
 

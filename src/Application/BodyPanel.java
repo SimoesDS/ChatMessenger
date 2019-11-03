@@ -6,6 +6,8 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Ellipse2D;
@@ -18,13 +20,11 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 
 import Client.ClientListener.AlertaTelaListener;
 import Communication.ICommands;
+import Communication.RequestResponseData;
 import Misc.Message;
-import Misc.RequestResponseData;
 import Misc.Usuario;
 
 public class BodyPanel extends JPanel {
@@ -41,6 +41,7 @@ public class BodyPanel extends JPanel {
 		setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 		this.removeAll();
 		this.setPreferredSize(new Dimension(350, messagesPrevil.size() * CHAT_HEIGHT));
+		Core.setTargetId(-1);
 
 		if (messagesPrevil.size() == 0) {
 			JLabel noConversation = new JLabel("Não há conversas existentes");
@@ -51,16 +52,17 @@ public class BodyPanel extends JPanel {
 
 			this.add(noConversation);
 		}
+
 		int lastY = 0;
-		
+
 		for (int i = 0; i < messagesPrevil.size(); i++) {
-			int index = i;		
+			int index = i;
 
 			String name = (String) messagesPrevil.get(index)[0];
-			String lastMessage = (String) messagesPrevil.get(index)[1];
+			Message lastMessage = (Message) messagesPrevil.get(index)[1];
 			boolean status = (boolean) messagesPrevil.get(index)[2];
 			int targetId = Core.getIdUserByName(name);
-			
+
 			JPanel currPanel = new JPanel();
 			currPanel.setLayout(null); // retirar
 			currPanel.setBounds(0, lastY, 350, 75);
@@ -75,10 +77,10 @@ public class BodyPanel extends JPanel {
 			nameLabel.setBounds(50, 20, 100, 20);
 			nameLabel.setFont(new Font("Times New Roman", Font.BOLD, 16));
 
-			JLabel lastMessageLabel = new JLabel(lastMessage);
+			JLabel lastMessageLabel = new JLabel(lastMessage.getMessage());
 			lastMessageLabel.setBounds(52, 39, 300, 20);
 			lastMessageLabel.setFont(new Font("Times New Roman", Font.PLAIN, 12));
-			
+
 			JPanel circleNotify = new JPanel() {
 				@Override
 				public void paintComponent(Graphics g) {
@@ -87,7 +89,7 @@ public class BodyPanel extends JPanel {
 					g2.fill(new Ellipse2D.Double(0, 0, 10, 10));
 				}
 			};
-			
+
 			circleNotify.setBounds(300, 31, 10, 10);
 			boolean notifyNewMessage = Core.getListNewMSGFromUsers().contains(targetId);
 			circleNotify.setVisible(notifyNewMessage);
@@ -99,7 +101,7 @@ public class BodyPanel extends JPanel {
 			currPanel.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseClicked(MouseEvent e) {
-					Core.removeNewMSGFromUser(targetId);					
+					Core.removeNewMSGFromUser(targetId);
 					Usuario user = new Usuario(targetId, name);
 					Core.buildDialogWindow(user);
 					Core.setBottomScrollPosition();
@@ -128,15 +130,16 @@ public class BodyPanel extends JPanel {
 		ArrayList<Usuario> users = Core.getUsersName();
 		this.removeAll();
 		this.setPreferredSize(new Dimension(350, users.size() * CHAT_HEIGHT));
+		Core.setTargetId(-1);
 
 		int lastY = 0;
 		for (int i = 0; i < users.size(); i++) {
 			int index = i;
-			
+
 			String name = users.get(index).getNome();
 			int targetId = users.get(index).getId();
 			boolean status = (boolean) users.get(index).isOnline();
-			
+
 			JPanel currPanel = new JPanel();
 			currPanel.setLayout(null); // retirar
 			currPanel.setBounds(0, lastY, 350, 75);
@@ -251,13 +254,11 @@ public class BodyPanel extends JPanel {
 	}
 
 	public void removeInputArea() {
-//    if (this.getComponentCount() - 2 > 0) {
 		if (String.valueOf(this.getComponent(this.getComponentCount() - 2).getClass()).matches(".*JTextArea")) {
 			this.remove(this.getComponent(this.getComponentCount() - 2));
 			this.remove(this.getComponent(this.getComponentCount() - 1));
 			this.setPreferredSize(new Dimension(350, this.getPreferredSize().height - 78));
 		}
-//    }
 	}
 
 	public int getBallonsTotalHeight() {
@@ -273,22 +274,48 @@ public class BodyPanel extends JPanel {
 		this.removeAll();
 
 		JLabel usernameLabel = new JLabel("Login: ");
+
+		JPanel loginButton = new JPanel(null);
+		JTextField passwordField = new JPasswordField();
+
 		usernameLabel.setBounds(55, 16, 70, 30);
 		usernameLabel.setFont(new Font("Times New Roman", Font.ROMAN_BASELINE, 20));
 
 		JTextField usernameField = new JTextField();
 		usernameField.setBounds(138, 20, 150, 25);
-		// usernameField.getDocument().addDocumentListener());//InputListener(this));
+		usernameField.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				removeErrorMsg();
+				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+					passwordField.setText("");
+					passwordField.requestFocus();
+				}
+				super.keyPressed(e);
+			}
+		});
 
 		JLabel passwordLabel = new JLabel("Senha: ");
-		passwordLabel.setBounds(55, 51, 70, 30);
+		passwordLabel.setBounds(47, 51, 78, 30);
 		passwordLabel.setFont(new Font("Times New Roman", Font.ROMAN_BASELINE, 20));
-
-		JTextField passwordField = new JPasswordField();
+		
 		passwordField.setBounds(138, 55, 150, 25);
-		// passwordField.getDocument().addDocumentListener(new InputListener(this));
+		passwordField.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				removeErrorMsg();
+				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+					if (usernameField.getText().length() > 0 && passwordField.getText().length() > 0) {
+						Usuario user = new Usuario(usernameField.getText(), passwordField.getText());
+						Core.login(user);
+					} else {
+						showErrorMsg("Login ou senha inválidos");
+					}
+				}
+				super.keyPressed(e);
+			}
+		});
 
-		JPanel loginButton = new JPanel(null);
 		loginButton.setBounds(56, 95, 232, 30);
 		loginButton.setBackground(new Color(109, 142, 122));
 
@@ -300,9 +327,7 @@ public class BodyPanel extends JPanel {
 		loginButton.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-
 				if (usernameField.getText().length() > 0 && passwordField.getText().length() > 0) {
-
 					Usuario user = new Usuario(usernameField.getText(), passwordField.getText());
 					Core.login(user);
 				} else {
@@ -348,11 +373,8 @@ public class BodyPanel extends JPanel {
 			this.invalidLabel.setText("");
 		}
 	}
-	
-	public void showNotifyMSG() {
-	}
 
-	class HandlerListener implements AlertaTelaListener, ICommands {
+	class HandlerListener implements AlertaTelaListener, ICommands, IApplication {
 		private boolean statusObj[];
 
 		@Override
@@ -362,8 +384,8 @@ public class BodyPanel extends JPanel {
 				Core.setUserSession(reqRespData.getUser());
 				Core.setAllMessages(reqRespData.getAllMessages());
 				Core.setUsersName(reqRespData.getAllContacts());
-				Core.updateApplication("main");
-				System.out.println(" Seja bem vindo " + Core.getUserSession().getNome());
+				Core.updateApplication(WINDOW_MAIN);
+				System.out.println(" Seja bem vindo " + Core.getUserSession().getNome() + "!!");
 				break;
 
 			case LOGGED:
@@ -371,12 +393,13 @@ public class BodyPanel extends JPanel {
 				break;
 
 			case MESSAGE:
-				System.out.println("BodyPanel recebeu a mensagem de: " + reqRespData.getIdSender());
+				System.out.println("Recebeu a mensagem de: " + reqRespData.getIdSender());
 				Core.addMessage(reqRespData.getMessage());
-				Core.addNewMSGFromUser(reqRespData.getMessage().getIdSender());
-				
-				if(Core.getTargetId() == reqRespData.getMessage().getIdSender()) 
+
+				if (Core.getTargetId() == reqRespData.getMessage().getIdSender())
 					Core.addChatMessage(reqRespData.getMsg(), "in");
+				else
+					Core.addNewMSGFromUser(reqRespData.getMessage().getIdSender());
 				break;
 			case UNREGISTERED:
 				showErrorMsg("Login ou senha inválidos");
@@ -388,32 +411,9 @@ public class BodyPanel extends JPanel {
 			default:
 				break;
 			}
-			
-			if (Core.getCurrWindowStyle() == "main")
-				Core.updateApplication("main");
-			if (Core.getCurrWindowStyle() == "newChat")
-				Core.updateApplication("newChat");
 
-		}
-	}
-
-	class InputListener implements DocumentListener {
-
-		private BodyPanel self;
-
-		InputListener(BodyPanel self) {
-			this.self = self;
-		}
-
-		public void insertUpdate(DocumentEvent e) {
-			this.self.removeErrorMsg();
-		}
-
-		public void removeUpdate(DocumentEvent e) {
-			this.self.removeErrorMsg();
-		}
-
-		public void changedUpdate(DocumentEvent e) {
+			if (Core.getCurrWindowStyle() != WINDOW_LOGIN)
+				Core.updateApplication(Core.getCurrWindowStyle());
 		}
 	}
 }

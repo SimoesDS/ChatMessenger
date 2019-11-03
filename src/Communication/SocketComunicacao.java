@@ -16,31 +16,35 @@ public class SocketComunicacao implements IComunicacao{
 		inpStr = socket.getInputStream();
 		outStr = socket.getOutputStream();
 	}
-	
-	@Override
-	public void enviarBytes(byte[] dadosIN) throws IOException {
-		outStr.write(dadosIN);
-	}
 
 	@Override
-	public int recebeBytes(byte[] dadosOUT, int inicio, int tamanho)
-			throws IOException {
-		return inpStr.read(dadosOUT, inicio, tamanho);
-		
-	}
-	@Override
 	public void enviarObject(Object obj) throws IOException {
-		enviarBytes(mObject.objectToByte(obj));
+		outStr.write(mObject.objectToByte(obj));
 		
 	}
 	@Override
 	synchronized public Object recebeObject() throws IOException {
 		byte[] dadosOUT = new byte[4096];
-		int tamanho = recebeBytes(dadosOUT, 0, dadosOUT.length);
+		int tamanho = inpStr.read(dadosOUT, 0, dadosOUT.length);
 		if(tamanho > 0)
 			return mObject.byteToObject(dadosOUT); 
 		return null;
 		
+	}
+
+	@Override
+	public void closeConnection() {
+		try {
+			inpStr.close();
+		} catch (IOException e) {
+			//e.printStackTrace();
+		}
+		
+		try {
+			outStr.close();
+		} catch (IOException e) {
+			//e.printStackTrace();
+		}		
 	}
 
 }

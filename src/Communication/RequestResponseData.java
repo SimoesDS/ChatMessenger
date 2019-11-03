@@ -1,12 +1,15 @@
-package Misc;
-
-import Communication.ICommands;
+package Communication;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 
+import Misc.Message;
+import Misc.Usuario;
+
 public class RequestResponseData implements Serializable, ICommands {
 
+	private static final long serialVersionUID = 6925685202055492579L;
+	
 	private Object genericObject;
 	private int command;
 
@@ -95,10 +98,6 @@ public class RequestResponseData implements Serializable, ICommands {
 	public String getMsg() {
 		Message msg = getMessage();
 		return msg != null ? msg.getMessage() : "";
-	}
-
-	public void clearObject() {
-		this.genericObject = null;
 	}
 
 	private Object[] getArrayFromGenericObject() {
