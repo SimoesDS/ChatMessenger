@@ -61,7 +61,7 @@ public class TelaServer extends JFrame {
 		lblHostDB.setBounds(0, 125, 90, 15);
 		getContentPane().add(lblHostDB);
 
-		txtHostBD = new JTextField("db4free.net:3306/schat7");
+		txtHostBD = new JTextField("simoes-pc:3306/aps7");
 		txtHostBD.setColumns(10);
 		txtHostBD.setBounds(100, 125, 220, 20);
 		getContentPane().add(txtHostBD);
@@ -72,7 +72,7 @@ public class TelaServer extends JFrame {
 		lblUserDB.setBounds(0, 150, 90, 15);
 		getContentPane().add(lblUserDB);
 
-		txtUserBD = new JTextField("schat7");
+		txtUserBD = new JTextField("aps7");
 		txtUserBD.setColumns(10);
 		txtUserBD.setBounds(100, 150, 220, 20);
 		getContentPane().add(txtUserBD);
@@ -83,7 +83,7 @@ public class TelaServer extends JFrame {
 		lblPasswordDB.setBounds(20, 175, 70, 15);
 		getContentPane().add(lblPasswordDB);
 
-		txtPasswordBD = new JPasswordField("-2*5.betzNeb$hc~");
+		txtPasswordBD = new JPasswordField("Qa$3!adUYad");
 		txtPasswordBD.setColumns(10);
 		txtPasswordBD.setBounds(100, 175, 220, 20);
 		getContentPane().add(txtPasswordBD);

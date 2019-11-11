@@ -34,7 +34,7 @@ public class Core implements ICommands, IApplication {
 	private static ArrayList<Integer> listNewMSGFromUsers = new ArrayList<Integer>();
 	private static int targetId;
 
-	private final static String hostServer = "localhost";
+	private final static String hostServer = "192.168.1.101";
 	private final static int portServer = 5056;
 
 	public static void initializeApp() {
@@ -83,7 +83,7 @@ public class Core implements ICommands, IApplication {
 			break;
 		case WINDOW_MAIN:
 			scroll.setBounds(0, 100, 345, 372);
-			chatPanel.setMainWindow(Core.getPreviewData());
+			chatPanel.setMainWindow();
 			headerPanel.setMainWindow();
 			headerPanel.setSize(350, 100);
 			setTopScrollPosition();

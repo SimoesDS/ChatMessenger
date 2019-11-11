@@ -37,7 +37,8 @@ public class BodyPanel extends JPanel {
 		this.setLayout(null);
 	}
 
-	public void setMainWindow(ArrayList<Object[]> messagesPrevil) {
+	public void setMainWindow() {
+		ArrayList<Object[]> messagesPrevil = Core.getPreviewData();
 		setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 		this.removeAll();
 		this.setPreferredSize(new Dimension(350, messagesPrevil.size() * CHAT_HEIGHT));
@@ -182,6 +183,93 @@ public class BodyPanel extends JPanel {
 			this.add(currPanel);
 		}
 	}
+	
+	public void setLoginWindow() {
+		this.removeAll();
+
+		JLabel usernameLabel = new JLabel("Login: ");
+
+		JPanel loginButton = new JPanel(null);
+		JTextField passwordField = new JPasswordField();
+
+		usernameLabel.setBounds(55, 16, 70, 30);
+		usernameLabel.setFont(new Font("Times New Roman", Font.ROMAN_BASELINE, 20));
+
+		JTextField usernameField = new JTextField();
+		usernameField.setBounds(138, 20, 150, 25);
+		usernameField.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				removeErrorMsg();
+				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+					passwordField.setText("");
+					passwordField.requestFocus();
+				}
+				super.keyPressed(e);
+			}
+		});
+
+		JLabel passwordLabel = new JLabel("Senha: ");
+		passwordLabel.setBounds(47, 51, 78, 30);
+		passwordLabel.setFont(new Font("Times New Roman", Font.ROMAN_BASELINE, 20));
+		
+		passwordField.setBounds(138, 55, 150, 25);
+		passwordField.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				removeErrorMsg();
+				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+					if (usernameField.getText().length() > 0 && passwordField.getText().length() > 0) {
+						Usuario user = new Usuario(usernameField.getText(), passwordField.getText());
+						Core.login(user);
+					} else {
+						showErrorMsg("Login ou senha inválidos");
+					}
+				}
+				super.keyPressed(e);
+			}
+		});
+
+		loginButton.setBounds(56, 95, 232, 30);
+		loginButton.setBackground(new Color(109, 142, 122));
+
+		JLabel buttonMessage = new JLabel("Entrar");
+		buttonMessage.setBounds(85, 0, 116, 30);
+		buttonMessage.setFont(new Font("Arial", Font.ROMAN_BASELINE, 22));
+		buttonMessage.setForeground(new Color(242, 242, 242));
+
+		loginButton.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (usernameField.getText().length() > 0 && passwordField.getText().length() > 0) {
+					Usuario user = new Usuario(usernameField.getText(), passwordField.getText());
+					Core.login(user);
+				} else {
+					showErrorMsg("Login ou senha inválidos");
+				}
+			}
+
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				loginButton.setBackground(new Color(102, 130, 113));
+				setCursor(new Cursor(Cursor.HAND_CURSOR));
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+				loginButton.setBackground(new Color(109, 142, 122));
+				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+			}
+		});
+
+		loginButton.add(buttonMessage);
+
+		this.add(usernameLabel);
+		this.add(usernameField);
+		this.add(passwordLabel);
+		this.add(passwordField);
+		this.add(loginButton);
+	}
 
 	public void setDialogWindow(int targetId) {
 		setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
@@ -270,93 +358,6 @@ public class BodyPanel extends JPanel {
 		return height;
 	}
 
-	public void setLoginWindow() {
-		this.removeAll();
-
-		JLabel usernameLabel = new JLabel("Login: ");
-
-		JPanel loginButton = new JPanel(null);
-		JTextField passwordField = new JPasswordField();
-
-		usernameLabel.setBounds(55, 16, 70, 30);
-		usernameLabel.setFont(new Font("Times New Roman", Font.ROMAN_BASELINE, 20));
-
-		JTextField usernameField = new JTextField();
-		usernameField.setBounds(138, 20, 150, 25);
-		usernameField.addKeyListener(new KeyAdapter() {
-			@Override
-			public void keyPressed(KeyEvent e) {
-				removeErrorMsg();
-				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-					passwordField.setText("");
-					passwordField.requestFocus();
-				}
-				super.keyPressed(e);
-			}
-		});
-
-		JLabel passwordLabel = new JLabel("Senha: ");
-		passwordLabel.setBounds(47, 51, 78, 30);
-		passwordLabel.setFont(new Font("Times New Roman", Font.ROMAN_BASELINE, 20));
-		
-		passwordField.setBounds(138, 55, 150, 25);
-		passwordField.addKeyListener(new KeyAdapter() {
-			@Override
-			public void keyPressed(KeyEvent e) {
-				removeErrorMsg();
-				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-					if (usernameField.getText().length() > 0 && passwordField.getText().length() > 0) {
-						Usuario user = new Usuario(usernameField.getText(), passwordField.getText());
-						Core.login(user);
-					} else {
-						showErrorMsg("Login ou senha inválidos");
-					}
-				}
-				super.keyPressed(e);
-			}
-		});
-
-		loginButton.setBounds(56, 95, 232, 30);
-		loginButton.setBackground(new Color(109, 142, 122));
-
-		JLabel buttonMessage = new JLabel("Entrar");
-		buttonMessage.setBounds(85, 0, 116, 30);
-		buttonMessage.setFont(new Font("Arial", Font.ROMAN_BASELINE, 22));
-		buttonMessage.setForeground(new Color(242, 242, 242));
-
-		loginButton.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				if (usernameField.getText().length() > 0 && passwordField.getText().length() > 0) {
-					Usuario user = new Usuario(usernameField.getText(), passwordField.getText());
-					Core.login(user);
-				} else {
-					showErrorMsg("Login ou senha inválidos");
-				}
-			}
-
-			@Override
-			public void mouseEntered(MouseEvent e) {
-				loginButton.setBackground(new Color(102, 130, 113));
-				setCursor(new Cursor(Cursor.HAND_CURSOR));
-			}
-
-			@Override
-			public void mouseExited(MouseEvent e) {
-				loginButton.setBackground(new Color(109, 142, 122));
-				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-			}
-		});
-
-		loginButton.add(buttonMessage);
-
-		this.add(usernameLabel);
-		this.add(usernameField);
-		this.add(passwordLabel);
-		this.add(passwordField);
-		this.add(loginButton);
-	}
-
 	public void showErrorMsg(String message) {
 		this.invalidLabel = new JLabel(message);
 		this.invalidLabel.setBounds(97, 125, 170, 20);
@@ -407,6 +408,10 @@ public class BodyPanel extends JPanel {
 
 			case STATUS:
 				Core.setStatusOfUser(reqRespData.getUser());
+				break;
+			case LOGOUT:
+				Core.updateApplication(WINDOW_LOGIN);
+				Core.logout();
 				break;
 			default:
 				break;

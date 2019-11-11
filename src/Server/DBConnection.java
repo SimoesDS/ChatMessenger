@@ -67,7 +67,7 @@ public class DBConnection {
 	}
 
 	public RequestResponseData login(Usuario userTemp) {
-		final String sqlUser = "SELECT * FROM users WHERE user_name = ? and user_password = ?";
+		final String sqlUser = "SELECT * FROM users WHERE user_login = ? and user_password = ?";
 		final String sqlMessages = "SELECT * FROM messages WHERE message_owner = ? OR message_receiver = ? order by message_date";
 		final String sqlAllNameUsers = "SELECT user_id, user_name FROM users where user_id <> ? order by user_name";
 

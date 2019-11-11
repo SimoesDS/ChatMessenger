@@ -29,9 +29,6 @@ public class ClientListener extends Thread implements ICommands {
 	@Override
 	public void run() {
 		Object obj = null;
-		// TODO: Tem que colocar a condição de saida do while quando o usuario fizer
-		// logoff
-		// TODO: Quando perde a conexao com o serv fica dando erro infinito
 		try {
 			while (!killListener) {
 				if ((obj = recebeDados()) != null && obj instanceof RequestResponseData) {
@@ -40,7 +37,7 @@ public class ClientListener extends Thread implements ICommands {
 				}
 			}
 		} catch (Exception e) {
-			// TODO: Se der erro tem que voltar para tela de login
+			alertaTelaListener.AlertaTela(new RequestResponseData(LOGOUT));
 			if (e instanceof SocketException) {
 				SocketException se = (SocketException) e;
 				if (!se.getMessage().equals("Socket closed")) {
@@ -68,11 +65,13 @@ public class ClientListener extends Thread implements ICommands {
 
 		@Override
 		public void kill(Usuario user) {
-			System.out.println("Fez logout");
 			killListener = true;
-			comunicacao.closeConnection();
+			if (comunicacao != null) {
+				System.out.println("Chega por hoje!");
+				comunicacao.closeConnection(); 
+			}
 			comunicacao = null;
-			Thread.currentThread().interrupt();
+			Thread.currentThread().interrupt();	
 		}
 	}
 }
