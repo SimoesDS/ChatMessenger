@@ -12,20 +12,6 @@ USE `schat7`;
 -- --------------------------------------------------------
 
 --
--- Table structure for table `dialogs`
---
-
-CREATE TABLE `dialogs` (
-  `dialog_id` int(11) DEFAULT NULL,
-  `dialog_owner` int(11) DEFAULT NULL,
-  `dialog_receiver` int(11) DEFAULT NULL,
-  `message_id` int(11) DEFAULT NULL,
-  `date_info` date DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `messages`
 --
 
