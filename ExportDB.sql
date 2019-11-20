@@ -4,10 +4,10 @@ START TRANSACTION;
 SET time_zone = "+00:00";
 
 --
--- Database: `schat7`
+-- Database: `aps7`
 --
-CREATE DATABASE IF NOT EXISTS `schat7` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
-USE `schat7`;
+CREATE DATABASE IF NOT EXISTS `aps7` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+USE `aps7`;
 
 -- --------------------------------------------------------
 
@@ -47,7 +47,7 @@ INSERT INTO `users` (`user_id`, `user_name`, `user_login`, `user_password`) VALU
 -- --------------------------------------------------------
 
 --
--- Indexes for table `usuarios`
+-- Indexes for table `users`
 --
 ALTER TABLE `users`
   ADD PRIMARY KEY (`user_name`),
