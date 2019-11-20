@@ -97,7 +97,6 @@ public class Server implements Closeable {
 					System.out
 							.println(new Date().getTime() + " Usuario " + reqRespData.getUser().getNome() + " esta online!");
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				notifyAll(reqRespData.getUser());

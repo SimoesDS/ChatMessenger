@@ -34,11 +34,11 @@ public class Core implements ICommands, IApplication {
 	private static ArrayList<Integer> listNewMSGFromUsers = new ArrayList<Integer>();
 	private static int targetId;
 
-	private final static String hostServer = "192.168.1.101";
+	private final static String hostServer = "localhost";
 	private final static int portServer = 5056;
 
 	public static void initializeApp() {
-		mainFrame = new JFrame("SChat");
+		mainFrame = new JFrame("ChatMessage");
 		Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
 
 		int x = (int) (dimension.getWidth() - 350) / 2;
@@ -233,7 +233,6 @@ public class Core implements ICommands, IApplication {
 	}
 
 	public static void login(Usuario user) {
-		// TODO: Verificar o pq que precisa desses setUserSession
 		Core.setUserSession(user);
 
 		RequestResponseData reqRespData = new RequestResponseData(user, AUTHENTICATE);

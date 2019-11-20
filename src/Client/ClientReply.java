@@ -48,10 +48,8 @@ public class ClientReply implements ICommands, Runnable {
 			default:
 				break;
 			}
-		} catch (
-
-		UnknownHostException e1) {
-			e1.printStackTrace(); // TODO: Caso der erro de alguma forma mostrar ao usuario
+		} catch (UnknownHostException e1) {
+			e1.printStackTrace();
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		} catch (Exception e) {

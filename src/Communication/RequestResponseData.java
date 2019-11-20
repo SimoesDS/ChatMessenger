@@ -31,14 +31,6 @@ public class RequestResponseData implements Serializable, ICommands {
 		this.command = cmd;
 	}
 
-	public void setCommand(int command) {
-		this.command = command;
-	}
-
-	public int getCommand() {
-		return command;
-	}
-
 	public int getIdReceiver() {
 		if (command == MESSAGE && getMessage() != null)
 			return getMessage().getIdReceiver();
@@ -79,6 +71,10 @@ public class RequestResponseData implements Serializable, ICommands {
 		return messages;
 	}
 
+	public int getCommand() {
+		return command;
+	}
+	
 	public Usuario getUser() {
 		if (getArrayFromGenericObject() != null) {
 			Object[] obj = getArrayFromGenericObject();
@@ -100,6 +96,10 @@ public class RequestResponseData implements Serializable, ICommands {
 		return msg != null ? msg.getMessage() : "";
 	}
 
+	public void setCommand(int command) {
+		this.command = command;
+	}
+	
 	private Object[] getArrayFromGenericObject() {
 		if (genericObject != null && genericObject instanceof Object[])
 			return (Object[]) genericObject;
